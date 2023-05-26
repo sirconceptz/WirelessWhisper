@@ -9,6 +9,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.hermanowicz.wirelesswhisper.navigation.features.mainScreen.MainScreenRoute
+import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
+import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ScanDevicesRoute
+import com.hermanowicz.wirelesswhisper.navigation.features.settings.SettingsRoute
 
 @Composable
 fun AppNavHost() {
@@ -23,7 +26,20 @@ fun AppNavHost() {
             startDestination = AppScreens.MainScreen.route
         ) {
             composable(route = AppScreens.MainScreen.route) {
-                MainScreenRoute()
+                MainScreenRoute(
+                    onNavigateToPairedDevices = { navController.navigate(AppScreens.PairedDevices.route) },
+                    onNavigateToScanDevices = { navController.navigate(AppScreens.ScanDevices.route) },
+                    onNavigateToSettings = { navController.navigate(AppScreens.Settings.route) }
+                )
+            }
+            composable(route = AppScreens.PairedDevices.route) {
+                PairedDevicesRoute()
+            }
+            composable(route = AppScreens.ScanDevices.route) {
+                ScanDevicesRoute()
+            }
+            composable(route = AppScreens.Settings.route) {
+                SettingsRoute()
             }
         }
     }
