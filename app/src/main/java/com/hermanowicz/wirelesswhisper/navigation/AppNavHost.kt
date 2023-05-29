@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.DeviceDetailsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.mainScreen.MainScreenRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ScanDevicesRoute
@@ -33,7 +34,12 @@ fun AppNavHost() {
                 )
             }
             composable(route = AppScreens.PairedDevices.route) {
-                PairedDevicesRoute()
+                PairedDevicesRoute(
+                    onClickPairedDevice = { navController.navigate("${AppScreens.DeviceDetails.route}/$it") }
+                )
+            }
+            composable(route = "${AppScreens.DeviceDetails.route}/{macAddress}") {
+                DeviceDetailsRoute()
             }
             composable(route = AppScreens.ScanDevices.route) {
                 ScanDevicesRoute()
