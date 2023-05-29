@@ -8,11 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 
 @Composable
 fun PairedDevicesScreen(
     viewModel: PairedDevicesViewModel = hiltViewModel()
 ) {
+    val pairedDevices = viewModel.pairedDevices
+
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             Text(
@@ -20,6 +23,18 @@ fun PairedDevicesScreen(
                 text = "Paired devices",
                 textAlign = TextAlign.Center
             )
+        }
+        item {
+            DividerCardInside()
+        }
+        item {
+            pairedDevices.forEach { device ->
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = device.name + " - " + device.address,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
