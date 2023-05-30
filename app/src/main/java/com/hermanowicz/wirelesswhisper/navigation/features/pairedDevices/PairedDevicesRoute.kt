@@ -6,10 +6,12 @@ import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.ui.Pair
 @Composable
 fun PairedDevicesRoute(
     onClickPairedDevice: (String) -> Unit,
+    navigateToScanDevices: () -> Unit,
     bottomBar: @Composable () -> Unit
 ) {
     PairedDevicesScreen(
         onClickPairedDevice = onClickPairedDevice,
+        navigateToToScanDevices = navigateToScanDevices,
         bottomBar = bottomBar
     )
 }

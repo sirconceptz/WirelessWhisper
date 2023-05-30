@@ -24,7 +24,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.hermanowicz.wirelesswhisper.navigation.features.allChats.AllChatsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.DeviceDetailsRoute
-import com.hermanowicz.wirelesswhisper.navigation.features.mainScreen.MainScreenRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ScanDevicesRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.settings.SettingsRoute
@@ -40,19 +39,12 @@ fun AppNavHost() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = AppScreens.MainScreen.route
+            startDestination = AppScreens.AllChats.route
         ) {
-            composable(route = AppScreens.MainScreen.route) {
-                MainScreenRoute(
-                    onNavigateToPairedDevices = { navController.navigate(AppScreens.PairedDevices.route) },
-                    onNavigateToScanDevices = { navController.navigate(AppScreens.ScanDevices.route) },
-                    onNavigateToSettings = { navController.navigate(AppScreens.Settings.route) },
-                    bottomBar = { BottomNav(navController = navController) }
-                )
-            }
             composable(route = AppScreens.PairedDevices.route) {
                 PairedDevicesRoute(
                     onClickPairedDevice = { navController.navigate("${AppScreens.DeviceDetails.route}/$it") },
+                    navigateToScanDevices = { navController.navigate(AppScreens.ScanDevices.route) },
                     bottomBar = { BottomNav(navController = navController) }
                 )
             }
@@ -86,8 +78,8 @@ fun BottomNav(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val items = listOf(
-        AppScreens.MainScreen,
         AppScreens.AllChats,
+        AppScreens.PairedDevices,
         AppScreens.Settings
     )
     NavigationBar(
