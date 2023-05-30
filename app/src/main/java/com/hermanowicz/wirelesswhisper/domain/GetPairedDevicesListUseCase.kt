@@ -21,7 +21,10 @@ class GetPairedDevicesListUseCase @Inject constructor(
             }
             mutableDeviceList.toList()
         } catch (e: SecurityException) {
-            Timber.e("BT Adapter - bonded devices: $e")
+            Timber.e("BT Adapter - no bluetooth available: $e")
+            emptyList()
+        } catch (e: Exception) {
+            Timber.e("BT Adapter - unknown error: $e")
             emptyList()
         }
     }

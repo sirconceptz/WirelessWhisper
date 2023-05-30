@@ -7,11 +7,13 @@ import com.hermanowicz.wirelesswhisper.navigation.features.mainScreen.ui.MainScr
 fun MainScreenRoute(
     onNavigateToPairedDevices: () -> Unit,
     onNavigateToScanDevices: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    bottomBar: @Composable () -> Unit
 ) {
     MainScreen(
         onNavigateToPairedDevices = onNavigateToPairedDevices,
         onNavigateToScanDevices = onNavigateToScanDevices,
-        onNavigateToSettings = onNavigateToSettings
+        onNavigateToSettings = onNavigateToSettings,
+        bottomBar = bottomBar
     )
 }

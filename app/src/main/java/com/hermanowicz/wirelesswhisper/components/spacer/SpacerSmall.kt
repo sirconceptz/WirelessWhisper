@@ -10,4 +10,3 @@ import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 fun SpacerSmall() {
     Spacer(modifier = Modifier.height(LocalSpacing.current.small))
 }
-

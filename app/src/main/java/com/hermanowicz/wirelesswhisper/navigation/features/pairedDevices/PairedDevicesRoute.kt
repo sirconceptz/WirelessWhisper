@@ -5,9 +5,11 @@ import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.ui.Pair
 
 @Composable
 fun PairedDevicesRoute(
-    onClickPairedDevice: (String) -> Unit
+    onClickPairedDevice: (String) -> Unit,
+    bottomBar: @Composable () -> Unit
 ) {
     PairedDevicesScreen(
-        onClickPairedDevice = onClickPairedDevice
+        onClickPairedDevice = onClickPairedDevice,
+        bottomBar = bottomBar
     )
 }

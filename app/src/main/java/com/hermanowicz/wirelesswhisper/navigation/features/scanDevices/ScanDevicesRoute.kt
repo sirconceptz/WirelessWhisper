@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ui.ScanDevicesScreen
 
 @Composable
-fun ScanDevicesRoute() {
-    ScanDevicesScreen()
+fun ScanDevicesRoute(
+    bottomBar: @Composable () -> Unit
+) {
+    ScanDevicesScreen(bottomBar = bottomBar)
 }

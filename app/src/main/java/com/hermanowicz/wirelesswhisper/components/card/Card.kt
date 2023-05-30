@@ -18,7 +18,6 @@ fun CardPrimary(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = LocalSpacing.current.medium,
                 vertical = LocalSpacing.current.small
             )
     ) {

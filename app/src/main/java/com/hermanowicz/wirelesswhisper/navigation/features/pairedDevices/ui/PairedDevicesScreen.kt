@@ -14,36 +14,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
-import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
 
 @Composable
 fun PairedDevicesScreen(
     onClickPairedDevice: (String) -> Unit,
+    bottomBar: @Composable () -> Unit,
     viewModel: PairedDevicesViewModel = hiltViewModel()
 ) {
     val pairedDevices = viewModel.pairedDevices
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.paired_devices),
-                textAlign = TextAlign.Center
-            )
-        }
-        item {
-            DividerCardInside()
-        }
-        item {
-            pairedDevices.forEach { device ->
-                CardPrimary {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onClickPairedDevice(device.address) },
-                        text = device.name,
-                        style = TextStyle.Default.copy(color = MaterialTheme.colorScheme.surface, textAlign = TextAlign.Center)
-                    )
+    TopBarScaffold(
+        topBarText = stringResource(id = R.string.paired_devices),
+        bottomBar = bottomBar
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                pairedDevices.forEach { device ->
+                    CardPrimary {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onClickPairedDevice(device.address) },
+                            text = device.name,
+                            style = TextStyle.Default.copy(
+                                color = MaterialTheme.colorScheme.surface,
+                                textAlign = TextAlign.Center
+                            )
+                        )
+                    }
                 }
             }
         }

@@ -11,5 +11,5 @@ class PairedDevicesViewModel @Inject constructor(
     private val getPairedDevicesListUseCase: GetPairedDevicesListUseCase
 ) : ViewModel() {
 
-    val pairedDevices : List<Device> = getPairedDevicesListUseCase()
+    val pairedDevices: List<Device> = getPairedDevicesListUseCase()
 }

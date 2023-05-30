@@ -3,7 +3,6 @@ package com.hermanowicz.wirelesswhisper.data.local.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.hermanowicz.wirelesswhisper.data.model.DeviceEntity
 import kotlinx.coroutines.flow.Flow
