@@ -10,4 +10,5 @@
     <string name="main_screen">Home</string>
     <string name="all_chats">All chats</string>
     <string name="pair_new_device">Pair new device</string>
+    <string name="close">Close</string>
 </resources>
