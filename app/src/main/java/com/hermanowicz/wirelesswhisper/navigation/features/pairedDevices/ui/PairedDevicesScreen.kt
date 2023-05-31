@@ -3,6 +3,7 @@ package com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 
 @Composable
 fun PairedDevicesScreen(
@@ -39,7 +41,11 @@ fun PairedDevicesScreen(
         },
         bottomBar = bottomBar
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(LocalSpacing.current.medium)
+        ) {
             item {
                 pairedDevices.forEach { device ->
                     CardPrimary {

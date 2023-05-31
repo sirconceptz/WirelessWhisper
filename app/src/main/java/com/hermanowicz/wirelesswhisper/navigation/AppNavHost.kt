@@ -101,7 +101,6 @@ fun BottomNav(navController: NavController) {
                         fontSize = 9.sp
                     )
                 },
-                alwaysShowLabel = true,
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route)

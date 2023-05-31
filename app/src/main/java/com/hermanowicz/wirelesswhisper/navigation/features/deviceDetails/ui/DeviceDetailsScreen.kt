@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
@@ -39,22 +40,29 @@ fun DeviceDetailsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = stringResource(id = R.string.name)
+                            text = stringResource(id = R.string.name),
+                            color = Color.White
                         )
                         Text(
-                            text = "to do observe"
+                            text = "to do observe",
+                            color = Color.White
                         )
                     }
-                    DividerCardInside()
+                    DividerCardInside(
+                        modifier = Modifier.padding(vertical = LocalSpacing.current.small),
+                        color = Color.White
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = stringResource(id = R.string.mac_address)
+                            text = stringResource(id = R.string.mac_address),
+                            color = Color.White
                         )
                         Text(
-                            text = macAddress
+                            text = macAddress,
+                            color = Color.White
                         )
                     }
                 }
