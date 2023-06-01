@@ -52,7 +52,7 @@ fun PairedDevicesScreen(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onClickPairedDevice(device.address) },
+                                .clickable { onClickPairedDevice(device.macAddress) },
                             text = device.name,
                             style = TextStyle.Default.copy(
                                 color = MaterialTheme.colorScheme.surface,

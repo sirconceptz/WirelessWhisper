@@ -8,5 +8,6 @@ import androidx.room.PrimaryKey
 )
 data class DeviceEntity(
     @PrimaryKey
-    val macAddress: String = ""
+    val macAddress: String = "",
+    val name: String = ""
 )

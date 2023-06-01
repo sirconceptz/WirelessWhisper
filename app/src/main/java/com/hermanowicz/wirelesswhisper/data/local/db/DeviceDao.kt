@@ -16,9 +16,12 @@ interface DeviceDao {
     @Query("SELECT * FROM device WHERE macAddress = (:macAddress)")
     fun observeByAddress(macAddress: String): Flow<DeviceEntity>
 
+    @Query("UPDATE device SET name = :newName WHERE macAddress IN (:macAddress)")
+    suspend fun updateName(macAddress: String, newName: String)
+
     @Insert
-    fun insert(device: DeviceEntity)
+    suspend fun insert(device: DeviceEntity)
 
     @Delete
-    fun delete(device: DeviceEntity)
+    suspend fun delete(device: DeviceEntity)
 }

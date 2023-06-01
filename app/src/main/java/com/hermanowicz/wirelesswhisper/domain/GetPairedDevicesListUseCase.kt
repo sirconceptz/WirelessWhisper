@@ -17,7 +17,7 @@ class GetPairedDevicesListUseCase @Inject constructor(
             val btAdapter = bluetoothManager.adapter
             val bondedDevices = btAdapter.bondedDevices
             bondedDevices.forEach {
-                mutableDeviceList.add(Device(address = it.address, name = it.name))
+                mutableDeviceList.add(Device(macAddress = it.address, name = it.name))
             }
             mutableDeviceList.toList()
         } catch (e: SecurityException) {
