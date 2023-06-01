@@ -20,11 +20,19 @@ class DeviceLocalDataSourceImpl @Inject constructor(
         return dao.observeByAddress(macAddress).map { it.toDomainModel() }
     }
 
+    override fun checkIsExist(macAddress: String): Boolean {
+        return dao.isExist(macAddress)
+    }
+
+    override suspend fun insert(device: Device) {
+        dao.insert(device.toEntityModel())
+    }
+
     override suspend fun updateName(macAddress: String, newName: String) {
         dao.updateName(macAddress, newName)
     }
 
-    override suspend fun deleteDevice(device: Device) {
-        dao.delete(device.toEntityModel())
+    override suspend fun deleteDevice(macAddress: String) {
+        dao.delete(macAddress)
     }
 }

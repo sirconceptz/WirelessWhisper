@@ -71,6 +71,21 @@ class BluetoothBroadcastReceiver : BroadcastReceiver() {
                     Timber.e("BroadcastActions", "Error: $e")
                 }
             }
+            BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
+                bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                try {
+                    Toast.makeText(
+                        context,
+                        "Disconnected from " + bluetoothDevice!!.name,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    Timber.d("BroadcastActions", "Connected to " + bluetoothDevice.name)
+                } catch (e: SecurityException) {
+                    Timber.e("BroadcastActions", "Error: $e")
+                } catch (e: Exception) {
+                    Timber.e("BroadcastActions", "Error: $e")
+                }
+            }
         }
     }
 }

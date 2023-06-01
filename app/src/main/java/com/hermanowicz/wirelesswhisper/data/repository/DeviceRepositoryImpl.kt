@@ -17,11 +17,19 @@ class DeviceRepositoryImpl @Inject constructor(
         return localDataSource.observeByMacAddress(macAddress)
     }
 
+    override fun checkIsExist(macAddress: String): Boolean {
+        return localDataSource.checkIsExist(macAddress)
+    }
+
+    override suspend fun insert(device: Device) {
+        localDataSource.insert(device)
+    }
+
     override suspend fun updateName(macAddress: String, newName: String) {
         localDataSource.updateName(macAddress, newName)
     }
 
-    override suspend fun deleteDevice(device: Device) {
-        localDataSource.deleteDevice(device)
+    override suspend fun deleteDevice(macAddress: String) {
+        localDataSource.deleteDevice(macAddress)
     }
 }
