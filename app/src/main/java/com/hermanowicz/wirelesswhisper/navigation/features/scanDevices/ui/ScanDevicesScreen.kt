@@ -87,7 +87,6 @@ fun ScanDevicesScreen(
         onDeviceFound = {
             viewModel.setFoundDevice(it)
         },
-        onStartDiscovery = { viewModel.onStartScanning() },
-        onStopDiscovery = { viewModel.onStopScanning() }
+        onStartDiscovery = { viewModel.onStartScanning() }
     )
 }

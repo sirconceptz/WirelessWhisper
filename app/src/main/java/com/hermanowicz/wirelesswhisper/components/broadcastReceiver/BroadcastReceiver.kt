@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -18,13 +19,10 @@ fun SystemBroadcastReceiver(
     intentFilter: IntentFilter,
     onSystemEvent: (intent: Intent?) -> Unit
 ) {
-    // Grab the current context in this part of the UI tree
     val context = LocalContext.current
 
-    // Safely use the latest onSystemEvent lambda passed to the function
     val currentOnSystemEvent by rememberUpdatedState(onSystemEvent)
 
-    // If either context or systemAction changes, unregister and register again
     DisposableEffect(context) {
         val broadcast = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -34,7 +32,6 @@ fun SystemBroadcastReceiver(
 
         context.registerReceiver(broadcast, intentFilter)
 
-        // When the effect leaves the Composition, remove the callback
         onDispose {
             context.unregisterReceiver(broadcast)
         }
@@ -44,13 +41,11 @@ fun SystemBroadcastReceiver(
 @Composable
 fun ScanDevicesBroadcastReceiver(
     onDeviceFound: (BluetoothDevice) -> Unit,
-    onStartDiscovery: () -> Unit,
-    onStopDiscovery: () -> Unit
+    onStartDiscovery: () -> Unit
 ) {
     val listOfFilters = listOf(
         BluetoothDevice.ACTION_FOUND,
-        BluetoothAdapter.ACTION_DISCOVERY_STARTED,
-        BluetoothAdapter.ACTION_DISCOVERY_FINISHED
+        BluetoothAdapter.ACTION_DISCOVERY_STARTED
     )
     val intentFilter = IntentFilter()
     listOfFilters.forEach {
@@ -63,7 +58,14 @@ fun ScanDevicesBroadcastReceiver(
             when (action) {
                 BluetoothDevice.ACTION_FOUND -> {
                     val device: BluetoothDevice? =
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                            intent.getParcelableExtra(
+                                BluetoothDevice.EXTRA_DEVICE,
+                                BluetoothDevice::class.java
+                            )
+                        else
+                            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+
                     try {
                         val deviceName = device!!.name
                         val deviceHardwareAddress = device.address // MAC address
@@ -73,13 +75,10 @@ fun ScanDevicesBroadcastReceiver(
                         Timber.e(e.message)
                     }
                 }
+
                 BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
                     Timber.d("BT Discovery started")
                     onStartDiscovery()
-                }
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
-                    Timber.d("BT Discovery finished")
-                    onStopDiscovery()
                 }
             }
         }
