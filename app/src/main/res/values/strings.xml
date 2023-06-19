@@ -11,4 +11,8 @@
     <string name="all_chats">All chats</string>
     <string name="pair_new_device">Pair new device</string>
     <string name="close">Close</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="main_settings">Main settings</string>
 </resources>
