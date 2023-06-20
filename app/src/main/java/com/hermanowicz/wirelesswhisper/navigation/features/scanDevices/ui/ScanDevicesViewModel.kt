@@ -52,4 +52,10 @@ class ScanDevicesViewModel @Inject constructor(
     fun onStartScanning() {
         getDeviceListFromHashMapUseCase.clearFoundDevices()
     }
+
+    fun turnOnDiscoverable(bool: Boolean) {
+        _state.update {
+            it.copy(turnOnDiscoverableMode = bool)
+        }
+    }
 }

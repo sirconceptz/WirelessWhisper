@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class GetDeviceListFromHashMapUseCase @Inject constructor() : () -> List<Device> {
 
-    var devicesMap = hashSetOf<Device>()
+    private var devicesMap = hashSetOf<Device>()
 
     override fun invoke(): List<Device> {
         return devicesMap.toList()

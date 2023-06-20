@@ -5,6 +5,7 @@ import com.hermanowicz.wirelesswhisper.data.model.Device
 data class ScanDevicesState(
     var showDialogOnPairDevice: Boolean = false,
     var foundDevices: List<Device> = emptyList(),
-    var deviceDuringPairing: Device? = null
+    var deviceDuringPairing: Device? = null,
+    var turnOnDiscoverableMode: Boolean = false
 
 )
