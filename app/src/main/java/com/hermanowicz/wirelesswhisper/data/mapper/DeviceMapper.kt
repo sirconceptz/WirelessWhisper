@@ -5,10 +5,12 @@ import com.hermanowicz.wirelesswhisper.data.model.DeviceEntity
 
 fun DeviceEntity.toDomainModel() = Device(
     name = name,
-    macAddress = macAddress
+    macAddress = macAddress,
+    connected = connected
 )
 
 fun Device.toEntityModel() = DeviceEntity(
     name = name,
-    macAddress = macAddress
+    macAddress = macAddress,
+    connected = connected
 )

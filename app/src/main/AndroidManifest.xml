@@ -39,14 +39,9 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".receivers.BluetoothBroadcastReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
-                <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED" />
-                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
-                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
-            </intent-filter>
-        </receiver>
+        <service
+            android:name=".bluetooth.MyBluetoothService"
+            android:foregroundServiceType="location" />
+
     </application>
 </manifest>

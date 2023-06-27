@@ -27,6 +27,7 @@ import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.DeviceD
 import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ScanDevicesRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.settings.SettingsRoute
+import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.SingleChatRoute
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -63,6 +64,11 @@ fun AppNavHost() {
                     bottomBar = { BottomNav(navController = navController) }
                 )
             }
+            composable(route = AppScreens.SingleChat.route) {
+                SingleChatRoute(
+                    bottomBar = { BottomNav(navController = navController) }
+                )
+            }
             composable(route = AppScreens.Settings.route) {
                 SettingsRoute(
                     bottomBar = { BottomNav(navController = navController) }
@@ -78,7 +84,7 @@ fun BottomNav(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val items = listOf(
-        AppScreens.AllChats,
+        AppScreens.SingleChat,
         AppScreens.PairedDevices,
         AppScreens.Settings
     )

@@ -1,12 +1,14 @@
 package com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ui
 
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.domain.GetDeviceListFromHashMapUseCase
 import com.hermanowicz.wirelesswhisper.domain.StartScanningDevicesUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.state.ScanDevicesState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScanDevicesViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val startScanningDevicesUseCase: StartScanningDevicesUseCase,
     private val getDeviceListFromHashMapUseCase: GetDeviceListFromHashMapUseCase
 ) : ViewModel() {
@@ -33,10 +36,6 @@ class ScanDevicesViewModel @Inject constructor(
 
     fun onClickFoundDevice(device: Device) {
         showDialogOnPairDevice(show = true, device = device)
-    }
-
-    fun onPairDevice() {
-        showDialogOnPairDevice(false)
     }
 
     fun setFoundDevice(foundDevice: BluetoothDevice) {

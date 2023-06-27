@@ -70,9 +70,11 @@ fun SettingsScreen(
             item {
                 TextLabel(text = stringResource(id = R.string.main_settings))
                 CardWhiteBgWithBorder {
-                    SwitchPrimary(label = stringResource(id = R.string.bluetooth),
+                    SwitchPrimary(
+                        label = stringResource(id = R.string.bluetooth),
                         state = uiState.bluetoothEnabled,
-                        onStateChange = { viewModel.openDeviceSettings(true) } )
+                        onStateChange = { viewModel.openDeviceSettings(true) }
+                    )
                 }
             }
         }

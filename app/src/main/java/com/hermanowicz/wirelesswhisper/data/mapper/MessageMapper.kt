@@ -8,7 +8,9 @@ fun MessageEntity.toDomainModel() = Message(
     senderAddress = senderAddress,
     receiverAddress = receiverAddress,
     message = message,
-    timestamp = timestamp
+    timestamp = timestamp,
+    readOut = readOut,
+    messageStatus = messageStatus
 )
 
 fun Message.toEntityModel() = MessageEntity(
@@ -16,5 +18,7 @@ fun Message.toEntityModel() = MessageEntity(
     senderAddress = senderAddress,
     receiverAddress = receiverAddress,
     message = message,
-    timestamp = timestamp
+    timestamp = timestamp,
+    readOut = readOut,
+    messageStatus = messageStatus
 )

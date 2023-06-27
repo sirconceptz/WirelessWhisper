@@ -1,10 +1,10 @@
 package com.hermanowicz.wirelesswhisper.data.local.db
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.hermanowicz.wirelesswhisper.data.model.MessageEntity
+import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,7 +19,9 @@ interface MessageDao {
     @Insert
     suspend fun insert(message: MessageEntity)
 
-    @Delete
-    suspend fun delete(message: MessageEntity)
+    @Query("UPDATE message SET messageStatus = :messageStatus WHERE id IN (:messageId)")
+    suspend fun updateMessageStatus(messageId: Int, messageStatus: MessageStatus)
 
+    @Query("DELETE FROM message WHERE id IN (:messageId)")
+    suspend fun delete(messageId: Int)
 }

@@ -13,7 +13,8 @@ class GetPairedDevicesListUseCase @Inject constructor(
     override fun invoke(): List<Device> {
         return try {
             val mutableDeviceList = mutableListOf<Device>()
-            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothManager =
+                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             val btAdapter = bluetoothManager.adapter
             val bondedDevices = btAdapter.bondedDevices
             bondedDevices.forEach {

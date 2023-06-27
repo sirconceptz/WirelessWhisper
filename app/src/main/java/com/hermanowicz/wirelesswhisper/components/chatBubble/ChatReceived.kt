@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
-import com.hermanowicz.wirelesswhisper.ui.theme.Purple40
+import com.hermanowicz.wirelesswhisper.ui.theme.Purple20
 
 @Composable
 fun ChatReceived(
@@ -42,7 +42,7 @@ fun ChatReceived(
             Column(
                 modifier = Modifier
                     .background(
-                        color = Purple40,
+                        color = Purple20,
                         shape = TriangleLeftEdgeShape(10)
                     )
                     .width(8.dp)
@@ -51,7 +51,7 @@ fun ChatReceived(
             Column(
                 modifier = Modifier
                     .background(
-                        color = Purple40,
+                        color = Purple20,
                         shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp)
                     )
                     .padding(

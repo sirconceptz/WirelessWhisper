@@ -9,6 +9,7 @@
     <string name="scan">Scan</string>
     <string name="main_screen">Home</string>
     <string name="all_chats">All chats</string>
+    <string name="single_chat">Single chat</string>
     <string name="pair_new_device">Pair new device</string>
     <string name="close">Close</string>
     <string name="enabled">Enabled</string>

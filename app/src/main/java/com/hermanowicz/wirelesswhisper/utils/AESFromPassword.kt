@@ -6,7 +6,7 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-class AESFromPassword() {
+class AESFromPassword {
     companion object {
         fun get(password: CharArray?, salt: ByteArray?): SecretKey {
             val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")

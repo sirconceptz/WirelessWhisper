@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
+import com.hermanowicz.wirelesswhisper.bluetooth.MyBluetoothService
 import com.hermanowicz.wirelesswhisper.components.broadcastReceiver.ScanDevicesBroadcastReceiver
 import com.hermanowicz.wirelesswhisper.components.button.ButtonPrimary
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
@@ -36,25 +35,26 @@ import timber.log.Timber
 @Composable
 fun ScanDevicesScreen(
     bottomBar: @Composable () -> Unit,
-    viewModel: ScanDevicesViewModel = hiltViewModel()
+    viewModel: ScanDevicesViewModel = hiltViewModel(),
+    bluetoothService: Intent
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(key1 = state.turnOnDiscoverableMode) {
         if (state.turnOnDiscoverableMode) {
-            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothManager =
+                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             val btAdapter = bluetoothManager.adapter
             try {
-                if(btAdapter.isDiscovering) {
+                if (btAdapter.isDiscovering) {
                     btAdapter.cancelDiscovery()
                     Timber.d("Bluetooth: Cancel discovery new devices")
                 }
                 val intent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
                 intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
                 context.startActivity(intent)
-            }
-            catch (e: SecurityException) {
+            } catch (e: SecurityException) {
                 Timber.e("Bluetooth is not active")
             }
         }
@@ -64,7 +64,12 @@ fun ScanDevicesScreen(
         DialogPrimary(onDismissRequest = { viewModel.showDialogOnPairDevice(false) }) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Do you want to pair this device?")
-                ButtonPrimary(text = "Yes", onClick = { viewModel.onPairDevice() })
+                ButtonPrimary(text = "Yes", onClick = {
+                    bluetoothService.putExtra(MyBluetoothService.ACTION_CONNECT, state.deviceDuringPairing!!.macAddress)
+                    bluetoothService.action = MyBluetoothService.ACTION_CONNECT
+                    context.startService(bluetoothService)
+                    viewModel.showDialogOnPairDevice(false)
+                })
             }
         }
     }
@@ -103,7 +108,7 @@ fun ScanDevicesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { viewModel.onClickFoundDevice(device) },
-                            text = device.name,
+                            text = device.macAddress,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )

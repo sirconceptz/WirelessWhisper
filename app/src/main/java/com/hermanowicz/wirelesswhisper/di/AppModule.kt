@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.hermanowicz.wirelesswhisper.data.local.db.DeviceDao
 import com.hermanowicz.wirelesswhisper.data.local.db.LocalDb
+import com.hermanowicz.wirelesswhisper.data.local.db.MessageDao
 import com.hermanowicz.wirelesswhisper.utils.Constants.LOCAL_DB_NAME
 import dagger.Module
 import dagger.Provides
@@ -32,5 +33,11 @@ class AppModule {
     @Singleton
     fun provideDeviceDao(localDb: LocalDb): DeviceDao {
         return localDb.deviceDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMessageDao(localDb: LocalDb): MessageDao {
+        return localDb.messageDao()
     }
 }
