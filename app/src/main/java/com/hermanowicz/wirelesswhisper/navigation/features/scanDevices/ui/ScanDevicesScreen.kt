@@ -108,7 +108,7 @@ fun ScanDevicesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { viewModel.onClickFoundDevice(device) },
-                            text = device.macAddress,
+                            text = device.name,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )

@@ -12,6 +12,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.domain.GetDeviceAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.SaveMessageLocallyUseCase
@@ -30,6 +33,7 @@ import javax.inject.Inject
 
 private const val TAG = "MY_BLUETOOTH_MANAGER"
 
+const val NOTIFY_ID = 5
 // Defines several constants used when transmitting messages between the
 // service and the UI.
 const val MESSAGE_READ: Int = 0
@@ -44,8 +48,8 @@ class MyBluetoothService() : Service() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var clientThread: ClientThread
-    private lateinit var connectedThread: ConnectedThread
     private lateinit var serverThread: ServerThread
+    private var connectedThread: ConnectedThread? = null
 
     @Inject
     lateinit var saveMessageLocallyUseCase: SaveMessageLocallyUseCase
@@ -54,7 +58,7 @@ class MyBluetoothService() : Service() {
     lateinit var getDeviceAddressUseCase: GetDeviceAddressUseCase
 
     private val job by lazy { SupervisorJob() }
-    private val scope by lazy { CoroutineScope(Dispatchers.Main.immediate + job) }
+    private val scope by lazy { CoroutineScope(Dispatchers.IO + job) }
 
     inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
 
@@ -84,7 +88,7 @@ class MyBluetoothService() : Service() {
                 )
                 val text = String(mmBuffer, 0, readMsg.arg1)
 
-                scope.launch(Dispatchers.IO) {
+                scope.launch {
                     val message = Message(
                         id = null,
                         senderAddress = mmSocket.remoteDevice.address,
@@ -101,17 +105,17 @@ class MyBluetoothService() : Service() {
         }
 
         // Call this from the main activity to send data to the remote device.
-        fun write(bytes: ByteArray) {
+        fun write(content: String) {
             try {
-                mmOutStream.write(bytes)
-                scope.launch(Dispatchers.IO) {
+                mmOutStream.write(content.toByteArray())
+                scope.launch {
                     val message = Message(
                         id = null,
                         senderAddress = getDeviceAddressUseCase(),
                         receiverAddress = mmSocket.remoteDevice.address,
                         timestamp = System.currentTimeMillis(),
                         received = false,
-                        message = bytes.toString()
+                        message = content
                     )
                     Timber.d("Sent: $message")
                     saveMessageLocallyUseCase(message)
@@ -150,7 +154,7 @@ class MyBluetoothService() : Service() {
         }
     }
 
-    inner class ClientThread(private val context: Context, address: String) : Thread() {
+    inner class ClientThread(address: String) : Thread() {
 
         private lateinit var bluetoothAdapter: BluetoothAdapter
 
@@ -167,7 +171,7 @@ class MyBluetoothService() : Service() {
 
         override fun run() {
             val bluetoothManager =
-                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             bluetoothAdapter = bluetoothManager.adapter
             // Keep listening until exception occurs or a socket is returned.
             mmSocket?.let { socket ->
@@ -182,6 +186,7 @@ class MyBluetoothService() : Service() {
                 // The connection attempt succeeded. Perform work associated with
                 // the connection in a separate thread.
                 connectedThread = ConnectedThread(mmSocket!!)
+                connectedThread!!.start()
                 Timber.d("Bluetooth: Connected to " + socket.remoteDevice.address)
             }
         }
@@ -226,7 +231,14 @@ class MyBluetoothService() : Service() {
                 socket?.also {
                     Timber.d("Bluetooth: Connected to " + it.remoteDevice.address)
                     connectedThread = ConnectedThread(it)
-                    connectedThread.start()
+                    connectedThread!!.start()
+                    handler.post {
+                        Toast.makeText(
+                            this@MyBluetoothService,
+                            "Connected to " + socket.remoteDevice.address,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                     mmServerSocket?.close()
                     shouldLoop = false
                 }
@@ -255,7 +267,7 @@ class MyBluetoothService() : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Timber.d("Bluetooth service activated")
         when (intent.action) {
-            ACTION_START -> startServer()
+            ACTION_START -> initService()
             ACTION_CONNECT -> {
                 val macAddress = intent.getStringExtra(ACTION_CONNECT)
                 if (macAddress != null) {
@@ -274,6 +286,11 @@ class MyBluetoothService() : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun initService() {
+        //startForeground(NOTIFY_ID, generateNotification().build())
+        startServer()
+    }
+
     private fun startServer() {
         serverThread = ServerThread()
         serverThread.start()
@@ -281,7 +298,7 @@ class MyBluetoothService() : Service() {
     }
 
     private fun connectDevice(macAddress: String) {
-        clientThread = ClientThread(this, macAddress)
+        clientThread = ClientThread(macAddress)
         clientThread.start()
         Timber.d("Connection bluetooth started with $macAddress")
     }
@@ -291,7 +308,30 @@ class MyBluetoothService() : Service() {
     }
 
     private fun sendMessage(message: String) {
-        connectedThread.write(message.toByteArray())
+        if(connectedThread != null) {
+            connectedThread!!.write(message)
+        }
+    }
+
+    private fun generateNotification(): NotificationCompat.Builder {
+        val mainNotificationText = getString(R.string.app_name)
+        val titleText = getString(R.string.chat_is_active)
+
+        val bigTextStyle = NotificationCompat.BigTextStyle()
+            .bigText(getString(R.string.chat_is_active))
+            .setBigContentTitle(getString(R.string.app_name))
+
+        val notificationCompatBuilder =
+            NotificationCompat.Builder(applicationContext, "BT ACTIVE")
+
+        return notificationCompatBuilder.setStyle(bigTextStyle)
+            .setContentTitle(titleText)
+            .setContentText(mainNotificationText)
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
     }
 
     companion object {

@@ -2,6 +2,7 @@ package com.hermanowicz.wirelesswhisper.data.local.db
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.hermanowicz.wirelesswhisper.data.model.MessageEntity
 import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
@@ -16,7 +17,7 @@ interface MessageDao {
     @Query("SELECT * FROM message WHERE senderAddress = :address OR receiverAddress = :address")
     fun observeAllForAddress(address: String): Flow<List<MessageEntity>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(message: MessageEntity)
 
     @Query("UPDATE message SET messageStatus = :messageStatus WHERE id IN (:messageId)")

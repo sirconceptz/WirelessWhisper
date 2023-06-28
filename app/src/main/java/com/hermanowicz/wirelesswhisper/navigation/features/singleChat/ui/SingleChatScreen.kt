@@ -17,11 +17,10 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,16 +41,26 @@ fun SingleChatScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     TopBarScaffold(
-        //topBarText = uiState.device.name,
-        topBarText = "Single chat",
-        //bottomBar = bottomBar
+        // topBarText = uiState.device.name,
+        topBarText = "Single chat"
+        // bottomBar = bottomBar
     ) {
-        ChatView(uiState.messageList, bluetoothService)
+        ChatView(uiState.messageList,
+            bluetoothService,
+            uiState.currentMessage,
+            onCurrentMessageChange = {
+                viewModel.onCurrentMessageChange(it)
+            })
     }
 }
 
 @Composable
-fun ChatView(messageList: List<Message>, bluetoothService: Intent) {
+fun ChatView(
+    messageList: List<Message>,
+    bluetoothService: Intent,
+    currentMessage: String,
+    onCurrentMessageChange: (String) -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -60,7 +69,7 @@ fun ChatView(messageList: List<Message>, bluetoothService: Intent) {
         ) {
             MessagesBox(messageList)
         }
-        MessageBar(bluetoothService)
+        MessageBar(bluetoothService, currentMessage, onCurrentMessageChange)
     }
 }
 
@@ -70,9 +79,9 @@ fun MessagesBox(messageList: List<Message>) {
         messageList.forEach { message ->
             item {
                 if (message.received) {
-                    ChatReceived(text = message.message)
+                    ChatReceived(text = message.message, timestamp = message.timestamp)
                 } else {
-                    ChatSend(text = message.message)
+                    ChatSend(text = message.message, timestamp = message.timestamp)
                 }
             }
         }
@@ -80,28 +89,27 @@ fun MessagesBox(messageList: List<Message>) {
 }
 
 @Composable
-fun MessageBar(bluetoothService: Intent) {
+fun MessageBar(
+    bluetoothService: Intent, currentMessage: String, onCurrentMessageChange: (String) -> Unit
+) {
     val context = LocalContext.current
-    var rememberText = remember { TextFieldValue("") }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .requiredHeight(50.dp)
+            .requiredHeight(80.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Card(
             modifier = Modifier
                 .weight(1f)
                 .padding(LocalSpacing.current.small)
         ) {
-            TextField(
-                value = rememberText,
-                onValueChange = { rememberText = it }
-            )
+            TextField(value = currentMessage, onValueChange = { onCurrentMessageChange(it) })
         }
         IconButton(onClick = {
-            Toast.makeText(context, rememberText.text, Toast.LENGTH_LONG).show()
-            sendMessage(context, rememberText.text, bluetoothService)
+            Toast.makeText(context, currentMessage, Toast.LENGTH_LONG).show()
+            sendMessage(context, currentMessage, bluetoothService)
         }) {
             Icon(painter = painterResource(id = R.drawable.ic_send), contentDescription = null)
         }

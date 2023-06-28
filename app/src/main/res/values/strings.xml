@@ -17,4 +17,5 @@
     <string name="bluetooth">Bluetooth</string>
     <string name="main_settings">Main settings</string>
     <string name="turn_on_discoverable">Turn on discoverable</string>
+    <string name="chat_is_active">Chat is active</string>
 </resources>

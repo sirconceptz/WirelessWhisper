@@ -25,7 +25,6 @@ class AppModule {
             LocalDb::class.java,
             LOCAL_DB_NAME
         )
-            .fallbackToDestructiveMigration()
             .build()
     }
 

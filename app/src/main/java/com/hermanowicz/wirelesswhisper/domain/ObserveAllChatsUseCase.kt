@@ -2,6 +2,7 @@ package com.hermanowicz.wirelesswhisper.domain
 
 import com.hermanowicz.wirelesswhisper.di.repository.MessageRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -17,6 +18,6 @@ class ObserveAllChatsUseCase @Inject constructor(
                     Pair(message.senderAddress, message.senderAddress) // to change after implement different devices
                 }
             }
-        }
+        }.distinctUntilChanged()
     }
 }
