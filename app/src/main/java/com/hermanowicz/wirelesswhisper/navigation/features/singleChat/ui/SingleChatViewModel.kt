@@ -52,27 +52,21 @@ class SingleChatViewModel @Inject constructor(
     }
 
     private fun observeMessagesForAddress(address: String) {
-        //if (address.isNotEmpty()) {
+        if (address.isNotEmpty()) {
             viewModelScope.launch {
-                observeAllMessagesUseCase().collect { messageList ->
-                    // observeMessagesForAddressUseCase(address).collect { messageList ->
+                // observeAllMessagesUseCase().collect { messageList ->
+                observeMessagesForAddressUseCase(address).collect { messageList ->
                     updateMessageList(messageList)
                 }
             }
-        //}
-    }
-
-    fun sendMessage() {
-        // todo: send message
-
-        clearCurrentMessage()
+        }
     }
 
     private fun updateMessageList(messageList: List<Message>) {
         _uiState.update { it.copy(messageList = messageList) }
     }
 
-    private fun clearCurrentMessage() {
+    fun clearCurrentMessage() {
         onCurrentMessageChange("")
     }
 

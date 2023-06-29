@@ -29,6 +29,7 @@ import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
 import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.state.ScanDevicesState
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 import timber.log.Timber
 
@@ -55,21 +56,21 @@ fun ScanDevicesScreen(
                 intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
                 context.startActivity(intent)
             } catch (e: SecurityException) {
-                Timber.e("Bluetooth is not active")
+                Timber.e(context.getString(R.string.error_bluetooth_is_not_active))
             }
         }
     }
 
     if (state.showDialogOnPairDevice) {
-        DialogPrimary(onDismissRequest = { viewModel.showDialogOnPairDevice(false) }) {
+        DialogPrimary(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
+            onPositiveRequest = {
+                connectDevice(bluetoothService, state, context)
+                viewModel.showDialogOnPairDevice(false)
+            },
+            onDismissRequest = { viewModel.showDialogOnPairDevice(false) }) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("Do you want to pair this device?")
-                ButtonPrimary(text = "Yes", onClick = {
-                    bluetoothService.putExtra(MyBluetoothService.ACTION_CONNECT, state.deviceDuringPairing!!.macAddress)
-                    bluetoothService.action = MyBluetoothService.ACTION_CONNECT
-                    context.startService(bluetoothService)
-                    viewModel.showDialogOnPairDevice(false)
-                })
+                Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
             }
         }
     }
@@ -96,7 +97,7 @@ fun ScanDevicesScreen(
                 item {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "No found devices",
+                        text = stringResource(id = R.string.no_found_devices),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -130,4 +131,19 @@ fun ScanDevicesScreen(
         },
         onStartDiscovery = { viewModel.onStartScanning() }
     )
+
+
+}
+
+private fun connectDevice(
+    bluetoothService: Intent,
+    state: ScanDevicesState,
+    context: Context
+) {
+    bluetoothService.putExtra(
+        MyBluetoothService.ACTION_CONNECT,
+        state.deviceDuringPairing!!.macAddress
+    )
+    bluetoothService.action = MyBluetoothService.ACTION_CONNECT
+    context.startService(bluetoothService)
 }

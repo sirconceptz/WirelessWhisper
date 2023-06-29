@@ -1,5 +1,12 @@
 package com.hermanowicz.wirelesswhisper.navigation.features.allChats.state
 
+import com.hermanowicz.wirelesswhisper.data.model.Device
+
 data class AllChatsUiState(
-    val chatList: List<Pair<String, String>> = emptyList()
+    var chatList: List<Pair<String, String>> = emptyList(),
+    var pairedDevices: List<Device> = emptyList(),
+    var showDialogNewMessage: Boolean = false,
+    var showDropdownNewMessage: Boolean = false,
+    var selectedNewMessageDevice: String = "",
+    var newMessageDevice: Device? = null
 )

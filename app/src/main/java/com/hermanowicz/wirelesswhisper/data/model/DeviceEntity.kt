@@ -10,5 +10,6 @@ data class DeviceEntity(
     @PrimaryKey
     val macAddress: String = "",
     val name: String = "",
-    val connected: Boolean = false
+    val connected: Boolean = false,
+    val encryptionKey: String = ""
 )

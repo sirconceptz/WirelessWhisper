@@ -45,12 +45,15 @@ fun SingleChatScreen(
         topBarText = "Single chat"
         // bottomBar = bottomBar
     ) {
-        ChatView(uiState.messageList,
-            bluetoothService,
-            uiState.currentMessage,
+        ChatView(
+            messageList = uiState.messageList,
+            bluetoothService = bluetoothService,
+            currentMessage = uiState.currentMessage,
             onCurrentMessageChange = {
                 viewModel.onCurrentMessageChange(it)
-            })
+            },
+            clearTextField = { viewModel.clearCurrentMessage() }
+        )
     }
 }
 
@@ -59,7 +62,8 @@ fun ChatView(
     messageList: List<Message>,
     bluetoothService: Intent,
     currentMessage: String,
-    onCurrentMessageChange: (String) -> Unit
+    onCurrentMessageChange: (String) -> Unit,
+    clearTextField: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -69,7 +73,7 @@ fun ChatView(
         ) {
             MessagesBox(messageList)
         }
-        MessageBar(bluetoothService, currentMessage, onCurrentMessageChange)
+        MessageBar(bluetoothService, currentMessage, onCurrentMessageChange, clearTextField = clearTextField)
     }
 }
 
@@ -90,7 +94,10 @@ fun MessagesBox(messageList: List<Message>) {
 
 @Composable
 fun MessageBar(
-    bluetoothService: Intent, currentMessage: String, onCurrentMessageChange: (String) -> Unit
+    bluetoothService: Intent,
+    currentMessage: String,
+    onCurrentMessageChange: (String) -> Unit,
+    clearTextField: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -109,17 +116,18 @@ fun MessageBar(
         }
         IconButton(onClick = {
             Toast.makeText(context, currentMessage, Toast.LENGTH_LONG).show()
-            sendMessage(context, currentMessage, bluetoothService)
+            sendMessage(context, currentMessage, bluetoothService, clearTextField = clearTextField)
         }) {
             Icon(painter = painterResource(id = R.drawable.ic_send), contentDescription = null)
         }
     }
 }
 
-private fun sendMessage(context: Context, message: String, bluetoothService: Intent) {
+private fun sendMessage(context: Context, message: String, bluetoothService: Intent, clearTextField: () -> Unit) {
     bluetoothService.putExtra(MyBluetoothService.ACTION_SEND_MESSAGE, message)
     bluetoothService.action = MyBluetoothService.ACTION_SEND_MESSAGE
     context.startService(bluetoothService)
+    clearTextField
 }
 
 @Preview

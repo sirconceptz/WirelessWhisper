@@ -61,10 +61,11 @@ fun AppNavHost() {
             }
             composable(route = AppScreens.AllChats.route) {
                 AllChatsRoute(
+                    onClickSingleChat = { navController.navigate("${AppScreens.SingleChat.route}/$it") },
                     bottomBar = { BottomNav(navController = navController) }
                 )
             }
-            composable(route = AppScreens.SingleChat.route) {
+            composable(route = "${AppScreens.SingleChat.route}/{macAddress}") {
                 SingleChatRoute(
                     bottomBar = { BottomNav(navController = navController) }
                 )
@@ -84,7 +85,7 @@ fun BottomNav(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val items = listOf(
-        AppScreens.SingleChat,
+        AppScreens.AllChats,
         AppScreens.PairedDevices,
         AppScreens.Settings
     )

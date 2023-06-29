@@ -71,7 +71,7 @@ fun ChatReceived(
                 ) {
                     Text(
                         text = text,
-                        style = TextStyle.Default.copy(fontSize = 14.sp),
+                        style = TextStyle.Default.copy(fontSize = 14.sp)
                     )
                 }
             }
@@ -102,7 +102,6 @@ class TriangleLeftEdgeShape(private val offset: Int) : Shape {
         return Outline.Generic(path = trianglePath)
     }
 }
-
 
 @Preview
 @Composable

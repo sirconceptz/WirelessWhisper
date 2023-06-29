@@ -6,11 +6,13 @@ import com.hermanowicz.wirelesswhisper.data.model.DeviceEntity
 fun DeviceEntity.toDomainModel() = Device(
     name = name,
     macAddress = macAddress,
-    connected = connected
+    connected = connected,
+    encryptionKey = encryptionKey
 )
 
 fun Device.toEntityModel() = DeviceEntity(
     name = name,
     macAddress = macAddress,
-    connected = connected
+    connected = connected,
+    encryptionKey = encryptionKey
 )

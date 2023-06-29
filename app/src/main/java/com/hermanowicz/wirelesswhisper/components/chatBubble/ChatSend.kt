@@ -61,7 +61,7 @@ fun ChatSend(
                 ) {
                     Text(
                         text = text,
-                        style = TextStyle.Default.copy(fontSize = 14.sp),
+                        style = TextStyle.Default.copy(fontSize = 14.sp)
                     )
                 }
                 Column(

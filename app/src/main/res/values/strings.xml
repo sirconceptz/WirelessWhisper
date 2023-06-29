@@ -18,4 +18,12 @@
     <string name="main_settings">Main settings</string>
     <string name="turn_on_discoverable">Turn on discoverable</string>
     <string name="chat_is_active">Chat is active</string>
+    <string name="unnamed">Unnamed</string>
+    <string name="new_">New</string>
+    <string name="new_message">New message</string>
+    <string name="choose">Choose</string>
+    <string name="do_you_want_to_pair_this_device">Do you want to pair this device?</string>
+    <string name="error_bluetooth_is_not_active">Bluetooth is not active</string>
+    <string name="no_found_devices">No found devices</string>
+    <string name="confirm">Confirm</string>
 </resources>

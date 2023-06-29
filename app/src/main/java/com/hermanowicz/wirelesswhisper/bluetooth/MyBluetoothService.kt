@@ -1,5 +1,6 @@
 package com.hermanowicz.wirelesswhisper.bluetooth
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
@@ -15,9 +16,12 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.hermanowicz.wirelesswhisper.R
+import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.domain.GetDeviceAddressUseCase
+import com.hermanowicz.wirelesswhisper.domain.ObserveAllPairedDevicesUseCase
 import com.hermanowicz.wirelesswhisper.domain.SaveMessageLocallyUseCase
+import com.hermanowicz.wirelesswhisper.domain.SavePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.utils.Secrets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +38,7 @@ import javax.inject.Inject
 private const val TAG = "MY_BLUETOOTH_MANAGER"
 
 const val NOTIFY_ID = 5
+
 // Defines several constants used when transmitting messages between the
 // service and the UI.
 const val MESSAGE_READ: Int = 0
@@ -45,6 +50,7 @@ const val MESSAGE_TOAST: Int = 2
 class MyBluetoothService() : Service() {
 
     private val handler: Handler = Handler(Looper.getMainLooper())
+    private val context: Context = this
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var clientThread: ClientThread
@@ -56,6 +62,12 @@ class MyBluetoothService() : Service() {
 
     @Inject
     lateinit var getDeviceAddressUseCase: GetDeviceAddressUseCase
+
+    @Inject
+    lateinit var observeAllPairedDevicesUseCase: ObserveAllPairedDevicesUseCase
+
+    @Inject
+    lateinit var savePairedDevicesUseCase: SavePairedDeviceUseCase
 
     private val job by lazy { SupervisorJob() }
     private val scope by lazy { CoroutineScope(Dispatchers.IO + job) }
@@ -169,6 +181,7 @@ class MyBluetoothService() : Service() {
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun run() {
             val bluetoothManager =
                 getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -185,8 +198,13 @@ class MyBluetoothService() : Service() {
 
                 // The connection attempt succeeded. Perform work associated with
                 // the connection in a separate thread.
-                connectedThread = ConnectedThread(mmSocket!!)
-                connectedThread!!.start()
+                setConnectedThread(socket)
+                val device = Device(
+                    macAddress = socket.remoteDevice.address,
+                    name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
+                    connected = true,
+                )
+                saveDeviceIfNotSaved(device)
                 Timber.d("Bluetooth: Connected to " + socket.remoteDevice.address)
             }
         }
@@ -214,6 +232,7 @@ class MyBluetoothService() : Service() {
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun run() {
             val bluetoothManager =
                 getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -230,11 +249,16 @@ class MyBluetoothService() : Service() {
                 }
                 socket?.also {
                     Timber.d("Bluetooth: Connected to " + it.remoteDevice.address)
-                    connectedThread = ConnectedThread(it)
-                    connectedThread!!.start()
+                    setConnectedThread(it)
+                    val device = Device(
+                        macAddress = socket.remoteDevice.address,
+                        name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
+                        connected = true,
+                    )
+                    saveDeviceIfNotSaved(device)
                     handler.post {
                         Toast.makeText(
-                            this@MyBluetoothService,
+                            context,
                             "Connected to " + socket.remoteDevice.address,
                             Toast.LENGTH_LONG
                         ).show()
@@ -253,6 +277,11 @@ class MyBluetoothService() : Service() {
                 Timber.e(TAG, "Could not close the connect socket", e)
             }
         }
+    }
+
+    private fun setConnectedThread(it: BluetoothSocket) {
+        connectedThread = ConnectedThread(it)
+        connectedThread!!.start()
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -287,7 +316,7 @@ class MyBluetoothService() : Service() {
     }
 
     private fun initService() {
-        //startForeground(NOTIFY_ID, generateNotification().build())
+        // startForeground(NOTIFY_ID, generateNotification().build())
         startServer()
     }
 
@@ -308,7 +337,7 @@ class MyBluetoothService() : Service() {
     }
 
     private fun sendMessage(message: String) {
-        if(connectedThread != null) {
+        if (connectedThread != null) {
             connectedThread!!.write(message)
         }
     }
@@ -332,6 +361,20 @@ class MyBluetoothService() : Service() {
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+    }
+
+    private fun saveDeviceIfNotSaved(device: Device) {
+        var saved = false
+        scope.launch {
+            observeAllPairedDevicesUseCase().collect { devices ->
+                devices.forEach { singleDevice ->
+                    if (singleDevice.macAddress == device.macAddress)
+                        saved = true
+                }
+                if (!saved)
+                    savePairedDevicesUseCase(device)
+            }
+        }
     }
 
     companion object {
