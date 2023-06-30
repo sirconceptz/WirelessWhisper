@@ -5,7 +5,7 @@ import com.hermanowicz.wirelesswhisper.navigation.features.allChats.ui.AllChatsS
 
 @Composable
 fun AllChatsRoute(
-    onClickSingleChat : (String) -> Unit,
+    onClickSingleChat: (String) -> Unit,
     bottomBar: @Composable () -> Unit
 ) {
     AllChatsScreen(

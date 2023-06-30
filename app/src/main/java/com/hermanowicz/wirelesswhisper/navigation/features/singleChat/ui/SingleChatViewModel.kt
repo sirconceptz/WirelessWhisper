@@ -8,7 +8,7 @@ import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.domain.ObserveAllMessagesUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveMessagesForAddressUseCase
-import com.hermanowicz.wirelesswhisper.domain.SendMessageUseCase
+import com.hermanowicz.wirelesswhisper.domain.UpdateMessageReadOutStatusUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.state.SingleChatUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class SingleChatViewModel @Inject constructor(
     private val observeMessagesForAddressUseCase: ObserveMessagesForAddressUseCase,
     private val observeAllMessagesUseCase: ObserveAllMessagesUseCase,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
-    private val sendMessageUseCase: SendMessageUseCase
+    private val updateMessageReadOutStatusUseCase: UpdateMessageReadOutStatusUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -54,8 +54,12 @@ class SingleChatViewModel @Inject constructor(
     private fun observeMessagesForAddress(address: String) {
         if (address.isNotEmpty()) {
             viewModelScope.launch {
-                // observeAllMessagesUseCase().collect { messageList ->
                 observeMessagesForAddressUseCase(address).collect { messageList ->
+                    messageList.forEach {
+                        if(!it.readOut) {
+                            updateMessageReadOutStatusUseCase(it.id!!, true)
+                        }
+                    }
                     updateMessageList(messageList)
                 }
             }

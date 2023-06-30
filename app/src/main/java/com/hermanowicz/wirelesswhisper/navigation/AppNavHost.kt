@@ -67,7 +67,7 @@ fun AppNavHost() {
             }
             composable(route = "${AppScreens.SingleChat.route}/{macAddress}") {
                 SingleChatRoute(
-                    bottomBar = { BottomNav(navController = navController) }
+                    navigationIconClick = { navController.popBackStack() }
                 )
             }
             composable(route = AppScreens.Settings.route) {

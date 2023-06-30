@@ -14,7 +14,7 @@ interface MessageLocalDataSource {
     fun observeAllForAddress(address: String): Flow<List<Message>>
     suspend fun insertMessage(message: Message)
     suspend fun deleteMassage(id: Int)
-    suspend fun updateMessageStatus(messageId: Int, messageStatus: MessageStatus)
+    suspend fun updateMessageReadOutStatus(messageId: Int, readOut: Boolean)
 }
 
 @Module

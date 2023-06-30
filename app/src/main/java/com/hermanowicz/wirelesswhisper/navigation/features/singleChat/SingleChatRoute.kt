@@ -8,12 +8,12 @@ import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.ui.SingleC
 
 @Composable
 fun SingleChatRoute(
-    bottomBar: @Composable () -> Unit
+    navigationIconClick: () -> Unit
 ) {
     val bluetoothServiceIntent = Intent(LocalContext.current, MyBluetoothService::class.java)
 
     SingleChatScreen(
-        bottomBar = bottomBar,
+        navigationIconClick = navigationIconClick,
         bluetoothService = bluetoothServiceIntent
     )
 }

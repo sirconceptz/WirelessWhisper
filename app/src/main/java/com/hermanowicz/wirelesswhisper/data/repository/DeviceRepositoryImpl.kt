@@ -29,6 +29,10 @@ class DeviceRepositoryImpl @Inject constructor(
         localDataSource.updateName(macAddress, newName)
     }
 
+    override suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean) {
+        localDataSource.updateConnectionStatus(macAddress, connectionStatus)
+    }
+
     override suspend fun deleteDevice(macAddress: String) {
         localDataSource.deleteDevice(macAddress)
     }

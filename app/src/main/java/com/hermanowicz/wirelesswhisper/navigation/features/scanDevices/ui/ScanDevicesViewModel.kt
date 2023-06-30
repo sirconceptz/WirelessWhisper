@@ -17,7 +17,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScanDevicesViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val startScanningDevicesUseCase: StartScanningDevicesUseCase,
     private val getDeviceListFromHashMapUseCase: GetDeviceListFromHashMapUseCase
 ) : ViewModel() {

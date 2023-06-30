@@ -37,12 +37,13 @@ class AllChatsViewModel @Inject constructor(
                 if (connectedDevices.isNotEmpty()) {
                     _uiState.update {
                         it.copy(
-                            pairedDevices = connectedDevices,
-                            selectedNewMessageDevice = connectedDevices[0].name
+                            pairedDevices = pairedDevices,
+                            connectedDevices = connectedDevices,
+                            newMessageDevice = connectedDevices[0]
                         )
                     }
                 }
-                getAllChatsUseCase(allMessages, connectedDevices)
+                getAllChatsUseCase(allMessages, pairedDevices)
             }.collect { chatList ->
                 _uiState.update { it.copy(chatList = chatList) }
             }

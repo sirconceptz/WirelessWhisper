@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 fun TopBarScaffold(
     topBarText: String,
     actions: @Composable RowScope.() -> Unit = {},
+    navigationIcon: @Composable (() -> Unit)? = null,
     bottomBar: @Composable () -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -23,6 +24,7 @@ fun TopBarScaffold(
             title = {
                 Text(text = topBarText)
             },
+            navigationIcon = navigationIcon,
             actions = actions,
             backgroundColor = MaterialTheme.colors.primary,
             contentColor = Color.White,

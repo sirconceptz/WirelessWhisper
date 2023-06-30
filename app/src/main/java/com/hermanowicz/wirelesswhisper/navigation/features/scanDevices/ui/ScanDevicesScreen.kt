@@ -68,7 +68,8 @@ fun ScanDevicesScreen(
                 connectDevice(bluetoothService, state, context)
                 viewModel.showDialogOnPairDevice(false)
             },
-            onDismissRequest = { viewModel.showDialogOnPairDevice(false) }) {
+            onDismissRequest = { viewModel.showDialogOnPairDevice(false) }
+        ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
             }
@@ -131,8 +132,6 @@ fun ScanDevicesScreen(
         },
         onStartDiscovery = { viewModel.onStartScanning() }
     )
-
-
 }
 
 private fun connectDevice(

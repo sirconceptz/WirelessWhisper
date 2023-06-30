@@ -22,6 +22,7 @@ import com.hermanowicz.wirelesswhisper.domain.GetDeviceAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveAllPairedDevicesUseCase
 import com.hermanowicz.wirelesswhisper.domain.SaveMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.SavePairedDeviceUseCase
+import com.hermanowicz.wirelesswhisper.domain.UpdateDeviceConnectionStatusUseCase
 import com.hermanowicz.wirelesswhisper.utils.Secrets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -53,9 +54,10 @@ class MyBluetoothService() : Service() {
     private val context: Context = this
 
     private lateinit var notificationManager: NotificationManager
-    private lateinit var clientThread: ClientThread
-    private lateinit var serverThread: ServerThread
+    private var clientThread: ClientThread? = null
+    private var serverThread: ServerThread? = null
     private var connectedThread: ConnectedThread? = null
+    private var currentMacAddress: String? = null
 
     @Inject
     lateinit var saveMessageLocallyUseCase: SaveMessageLocallyUseCase
@@ -68,6 +70,9 @@ class MyBluetoothService() : Service() {
 
     @Inject
     lateinit var savePairedDevicesUseCase: SavePairedDeviceUseCase
+
+    @Inject
+    lateinit var updateDeviceConnectionStatusUseCase: UpdateDeviceConnectionStatusUseCase
 
     private val job by lazy { SupervisorJob() }
     private val scope by lazy { CoroutineScope(Dispatchers.IO + job) }
@@ -93,10 +98,7 @@ class MyBluetoothService() : Service() {
 
                 // Send the obtained bytes to the UI activity.
                 val readMsg = handler.obtainMessage(
-                    MESSAGE_READ,
-                    numBytes,
-                    -1,
-                    mmBuffer
+                    MESSAGE_READ, numBytes, -1, mmBuffer
                 )
                 val text = String(mmBuffer, 0, readMsg.arg1)
 
@@ -106,6 +108,7 @@ class MyBluetoothService() : Service() {
                         senderAddress = mmSocket.remoteDevice.address,
                         receiverAddress = getDeviceAddressUseCase(),
                         timestamp = System.currentTimeMillis(),
+                        readOut = false,
                         received = true,
                         message = text
                     )
@@ -126,6 +129,7 @@ class MyBluetoothService() : Service() {
                         senderAddress = getDeviceAddressUseCase(),
                         receiverAddress = mmSocket.remoteDevice.address,
                         timestamp = System.currentTimeMillis(),
+                        readOut = true,
                         received = false,
                         message = content
                     )
@@ -147,10 +151,7 @@ class MyBluetoothService() : Service() {
 
             // Share the sent message with the UI activity.
             val writtenMsg = handler.obtainMessage(
-                MESSAGE_WRITE,
-                -1,
-                -1,
-                mmBuffer
+                MESSAGE_WRITE, -1, -1, mmBuffer
             )
             writtenMsg.sendToTarget()
         }
@@ -183,8 +184,7 @@ class MyBluetoothService() : Service() {
 
         @SuppressLint("MissingPermission")
         override fun run() {
-            val bluetoothManager =
-                getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             bluetoothAdapter = bluetoothManager.adapter
             // Keep listening until exception occurs or a socket is returned.
             mmSocket?.let { socket ->
@@ -193,7 +193,7 @@ class MyBluetoothService() : Service() {
                 try {
                     socket.connect()
                 } catch (e: SecurityException) {
-                    Timber.e(e.message)
+                    Timber.e(e.message) //todo: handle exception
                 }
 
                 // The connection attempt succeeded. Perform work associated with
@@ -202,7 +202,7 @@ class MyBluetoothService() : Service() {
                 val device = Device(
                     macAddress = socket.remoteDevice.address,
                     name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
-                    connected = true,
+                    connected = true
                 )
                 saveDeviceIfNotSaved(device)
                 Timber.d("Bluetooth: Connected to " + socket.remoteDevice.address)
@@ -234,8 +234,7 @@ class MyBluetoothService() : Service() {
 
         @SuppressLint("MissingPermission")
         override fun run() {
-            val bluetoothManager =
-                getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             bluetoothAdapter = bluetoothManager.adapter
             // Keep listening until exception occurs or a socket is returned.
             var shouldLoop = true
@@ -253,7 +252,7 @@ class MyBluetoothService() : Service() {
                     val device = Device(
                         macAddress = socket.remoteDevice.address,
                         name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
-                        connected = true,
+                        connected = true
                     )
                     saveDeviceIfNotSaved(device)
                     handler.post {
@@ -282,6 +281,7 @@ class MyBluetoothService() : Service() {
     private fun setConnectedThread(it: BluetoothSocket) {
         connectedThread = ConnectedThread(it)
         connectedThread!!.start()
+        currentMacAddress = it.remoteDevice.address
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -293,22 +293,24 @@ class MyBluetoothService() : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Bluetooth service activated")
-        when (intent.action) {
-            ACTION_START -> initService()
-            ACTION_CONNECT -> {
-                val macAddress = intent.getStringExtra(ACTION_CONNECT)
-                if (macAddress != null) {
-                    connectDevice(macAddress)
+        if(intent != null) {
+            when (intent.action) {
+                ACTION_START -> initService()
+                ACTION_CONNECT -> {
+                    val macAddress = intent.getStringExtra(ACTION_CONNECT)
+                    if (macAddress != null) {
+                        connectDevice(macAddress)
+                    }
                 }
-            }
 
-            ACTION_DISCONNECT -> disconnectDevice()
-            ACTION_SEND_MESSAGE -> {
-                val message = intent.getStringExtra(ACTION_SEND_MESSAGE)
-                if (message != null) {
-                    sendMessage(message)
+                ACTION_DISCONNECT -> disconnectDevice()
+                ACTION_SEND_MESSAGE -> {
+                    val message = intent.getStringExtra(ACTION_SEND_MESSAGE)
+                    if (message != null) {
+                        sendMessage(message)
+                    }
                 }
             }
         }
@@ -322,18 +324,30 @@ class MyBluetoothService() : Service() {
 
     private fun startServer() {
         serverThread = ServerThread()
-        serverThread.start()
+        serverThread!!.start()
         Timber.d("Start Bluetooth server")
     }
 
     private fun connectDevice(macAddress: String) {
         clientThread = ClientThread(macAddress)
-        clientThread.start()
+        clientThread!!.start()
         Timber.d("Connection bluetooth started with $macAddress")
     }
 
     private fun disconnectDevice() {
-        clientThread.cancel()
+        if (clientThread != null) {
+            try {
+                clientThread!!.cancel()
+                if(currentMacAddress != null ) {
+                    scope.launch {
+                        updateDeviceConnectionStatusUseCase(currentMacAddress!!, false)
+                        currentMacAddress = null
+                    }
+                }
+            } catch (_: IOException) {
+            }
+        }
+        startServer()
     }
 
     private fun sendMessage(message: String) {
@@ -346,20 +360,15 @@ class MyBluetoothService() : Service() {
         val mainNotificationText = getString(R.string.app_name)
         val titleText = getString(R.string.chat_is_active)
 
-        val bigTextStyle = NotificationCompat.BigTextStyle()
-            .bigText(getString(R.string.chat_is_active))
-            .setBigContentTitle(getString(R.string.app_name))
+        val bigTextStyle =
+            NotificationCompat.BigTextStyle().bigText(getString(R.string.chat_is_active))
+                .setBigContentTitle(getString(R.string.app_name))
 
-        val notificationCompatBuilder =
-            NotificationCompat.Builder(applicationContext, "BT ACTIVE")
+        val notificationCompatBuilder = NotificationCompat.Builder(applicationContext, "BT ACTIVE")
 
-        return notificationCompatBuilder.setStyle(bigTextStyle)
-            .setContentTitle(titleText)
-            .setContentText(mainNotificationText)
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setOnlyAlertOnce(true)
-            .setOngoing(true)
+        return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText)
+            .setContentText(mainNotificationText).setSmallIcon(R.drawable.ic_launcher_background)
+            .setDefaults(NotificationCompat.DEFAULT_ALL).setOnlyAlertOnce(true).setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
     }
 
@@ -368,11 +377,13 @@ class MyBluetoothService() : Service() {
         scope.launch {
             observeAllPairedDevicesUseCase().collect { devices ->
                 devices.forEach { singleDevice ->
-                    if (singleDevice.macAddress == device.macAddress)
+                    if (singleDevice.macAddress == device.macAddress) {
                         saved = true
+                    }
                 }
-                if (!saved)
+                if (!saved) {
                     savePairedDevicesUseCase(device)
+                }
             }
         }
     }

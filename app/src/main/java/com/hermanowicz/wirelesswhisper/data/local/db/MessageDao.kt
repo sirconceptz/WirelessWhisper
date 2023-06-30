@@ -20,8 +20,8 @@ interface MessageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(message: MessageEntity)
 
-    @Query("UPDATE message SET messageStatus = :messageStatus WHERE id IN (:messageId)")
-    suspend fun updateMessageStatus(messageId: Int, messageStatus: MessageStatus)
+    @Query("UPDATE message SET readOut = :readOut WHERE id IN (:messageId)")
+    suspend fun updateMessageReadOutStatus(messageId: Int, readOut: Boolean)
 
     @Query("DELETE FROM message WHERE id IN (:messageId)")
     suspend fun delete(messageId: Int)

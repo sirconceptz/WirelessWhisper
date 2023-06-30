@@ -30,13 +30,14 @@ fun AllChatsScreen(
     if (uiState.showDialogNewMessage) {
         DialogNewMessage(
             label = stringResource(id = R.string.new_message),
-            selectedValue = uiState.selectedNewMessageDevice,
-            deviceList = uiState.pairedDevices,
+            selectedValue = uiState.newMessageDevice?.name ?: "",
+            deviceList = uiState.connectedDevices,
             dropdownVisible = uiState.showDropdownNewMessage,
             showDropdown = { viewModel.showNewMessageDropdown(it) },
             onSelectDevice = { viewModel.onSelectNewMessageDevice(it) },
             onPositiveRequest = { onClickSingleChat(uiState.newMessageDevice!!.macAddress) },
-            onDismissRequest = { viewModel.showDialogNewMessage(false) })
+            onDismissRequest = { viewModel.showDialogNewMessage(false) }
+        )
     }
 
     TopBarScaffold(
@@ -61,7 +62,7 @@ fun AllChatsScreen(
                 item {
                     Box(modifier = Modifier.clickable { onClickSingleChat(it.second) }) {
                         CardPrimary {
-                            Text(text = it.first)
+                            Text(text = it.first, color = Color.White)
                         }
                     }
                 }

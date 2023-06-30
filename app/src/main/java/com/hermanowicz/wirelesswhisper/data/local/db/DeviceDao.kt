@@ -26,4 +26,7 @@ interface DeviceDao {
 
     @Query("DELETE FROM device WHERE macAddress IN (:macAddress)")
     suspend fun delete(macAddress: String)
+
+    @Query("UPDATE device SET connected = :connectionStatus WHERE macAddress IN (:macAddress)")
+    suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)
 }

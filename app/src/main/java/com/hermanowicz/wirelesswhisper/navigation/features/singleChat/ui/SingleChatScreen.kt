@@ -5,7 +5,6 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
@@ -14,6 +13,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,16 +35,22 @@ import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 
 @Composable
 fun SingleChatScreen(
-    bottomBar: @Composable () -> Unit,
+    navigationIconClick: () -> Unit,
     viewModel: SingleChatViewModel = hiltViewModel(),
     bluetoothService: Intent
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     TopBarScaffold(
-        // topBarText = uiState.device.name,
-        topBarText = "Single chat"
-        // bottomBar = bottomBar
+        topBarText = uiState.device.name,
+        navigationIcon = {
+            IconButton(onClick = navigationIconClick) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = null
+                )
+            }
+        }
     ) {
         ChatView(
             messageList = uiState.messageList,
@@ -65,21 +72,26 @@ fun ChatView(
     onCurrentMessageChange: (String) -> Unit,
     clearTextField: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column() {
         Column(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxWidth()
+                .weight(1f)
         ) {
             MessagesBox(messageList)
         }
-        MessageBar(bluetoothService, currentMessage, onCurrentMessageChange, clearTextField = clearTextField)
+        MessageBar(
+            bluetoothService,
+            currentMessage,
+            onCurrentMessageChange,
+            clearTextField = clearTextField
+        )
     }
 }
 
 @Composable
 fun MessagesBox(messageList: List<Message>) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+    LazyColumn(modifier = Modifier.fillMaxWidth()) {
         messageList.forEach { message ->
             item {
                 if (message.received) {
@@ -123,11 +135,16 @@ fun MessageBar(
     }
 }
 
-private fun sendMessage(context: Context, message: String, bluetoothService: Intent, clearTextField: () -> Unit) {
+private fun sendMessage(
+    context: Context,
+    message: String,
+    bluetoothService: Intent,
+    clearTextField: () -> Unit
+) {
     bluetoothService.putExtra(MyBluetoothService.ACTION_SEND_MESSAGE, message)
     bluetoothService.action = MyBluetoothService.ACTION_SEND_MESSAGE
     context.startService(bluetoothService)
-    clearTextField
+    clearTextField()
 }
 
 @Preview

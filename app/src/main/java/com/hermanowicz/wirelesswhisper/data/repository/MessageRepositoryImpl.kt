@@ -26,7 +26,7 @@ class MessageRepositoryImpl @Inject constructor(
         messageLocalDataSource.deleteMassage(id)
     }
 
-    override suspend fun updateMessageStatus(messageId: Int, messageStatus: MessageStatus) {
-        messageLocalDataSource.updateMessageStatus(messageId, messageStatus)
+    override suspend fun updateMessageReadOutStatus(messageId: Int, readOut: Boolean) {
+        messageLocalDataSource.updateMessageReadOutStatus(messageId, readOut)
     }
 }

@@ -5,7 +5,6 @@ import com.hermanowicz.wirelesswhisper.data.mapper.toDomainModel
 import com.hermanowicz.wirelesswhisper.data.mapper.toEntityModel
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.di.dataSource.MessageLocalDataSource
-import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -30,7 +29,7 @@ class MessageLocalDataSourceImpl @Inject constructor(
         messageDao.delete(id)
     }
 
-    override suspend fun updateMessageStatus(messageId: Int, messageStatus: MessageStatus) {
-        messageDao.updateMessageStatus(messageId, messageStatus)
+    override suspend fun updateMessageReadOutStatus(messageId: Int, readOut: Boolean) {
+        messageDao.updateMessageReadOutStatus(messageId, readOut)
     }
 }

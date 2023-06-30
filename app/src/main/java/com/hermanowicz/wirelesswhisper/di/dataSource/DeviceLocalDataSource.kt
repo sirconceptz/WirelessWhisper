@@ -13,6 +13,7 @@ interface DeviceLocalDataSource {
     fun observeByMacAddress(macAddress: String): Flow<Device>
     fun checkIsExist(macAddress: String): Boolean
     suspend fun insert(device: Device)
+    suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)
     suspend fun updateName(macAddress: String, newName: String)
     suspend fun deleteDevice(macAddress: String)
 }

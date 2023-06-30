@@ -28,6 +28,10 @@ class DeviceLocalDataSourceImpl @Inject constructor(
         dao.insert(device.toEntityModel())
     }
 
+    override suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean) {
+        dao.updateConnectionStatus(macAddress, connectionStatus)
+    }
+
     override suspend fun updateName(macAddress: String, newName: String) {
         dao.updateName(macAddress, newName)
     }

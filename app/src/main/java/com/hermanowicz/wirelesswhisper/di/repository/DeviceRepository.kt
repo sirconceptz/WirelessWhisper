@@ -14,6 +14,7 @@ interface DeviceRepository {
     fun checkIsExist(macAddress: String): Boolean
     suspend fun insert(device: Device)
     suspend fun updateName(macAddress: String, newName: String)
+    suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)
     suspend fun deleteDevice(macAddress: String)
 }
 
