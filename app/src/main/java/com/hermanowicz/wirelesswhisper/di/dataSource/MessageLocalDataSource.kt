@@ -2,7 +2,6 @@ package com.hermanowicz.wirelesswhisper.di.dataSource
 
 import com.hermanowicz.wirelesswhisper.data.dataSource.MessageLocalDataSourceImpl
 import com.hermanowicz.wirelesswhisper.data.model.Message
-import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

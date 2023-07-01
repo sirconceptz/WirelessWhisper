@@ -2,7 +2,6 @@ package com.hermanowicz.wirelesswhisper.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
 
 @Entity(
     tableName = "message"
@@ -15,6 +14,5 @@ data class MessageEntity(
     val message: String = "",
     val timestamp: Long = 0L,
     val received: Boolean = false,
-    val readOut: Boolean = false,
-    val messageStatus: MessageStatus = MessageStatus.SEND
+    val readOut: Boolean = false
 )

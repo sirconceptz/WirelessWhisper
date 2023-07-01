@@ -98,7 +98,10 @@ class MyBluetoothService() : Service() {
 
                 // Send the obtained bytes to the UI activity.
                 val readMsg = handler.obtainMessage(
-                    MESSAGE_READ, numBytes, -1, mmBuffer
+                    MESSAGE_READ,
+                    numBytes,
+                    -1,
+                    mmBuffer
                 )
                 val text = String(mmBuffer, 0, readMsg.arg1)
 
@@ -151,7 +154,10 @@ class MyBluetoothService() : Service() {
 
             // Share the sent message with the UI activity.
             val writtenMsg = handler.obtainMessage(
-                MESSAGE_WRITE, -1, -1, mmBuffer
+                MESSAGE_WRITE,
+                -1,
+                -1,
+                mmBuffer
             )
             writtenMsg.sendToTarget()
         }
@@ -193,7 +199,7 @@ class MyBluetoothService() : Service() {
                 try {
                     socket.connect()
                 } catch (e: SecurityException) {
-                    Timber.e(e.message) //todo: handle exception
+                    Timber.e(e.message) // todo: handle exception
                 }
 
                 // The connection attempt succeeded. Perform work associated with
@@ -295,7 +301,7 @@ class MyBluetoothService() : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Bluetooth service activated")
-        if(intent != null) {
+        if (intent != null) {
             when (intent.action) {
                 ACTION_START -> initService()
                 ACTION_CONNECT -> {
@@ -338,7 +344,7 @@ class MyBluetoothService() : Service() {
         if (clientThread != null) {
             try {
                 clientThread!!.cancel()
-                if(currentMacAddress != null ) {
+                if (currentMacAddress != null) {
                     scope.launch {
                         updateDeviceConnectionStatusUseCase(currentMacAddress!!, false)
                         currentMacAddress = null

@@ -56,7 +56,7 @@ class SingleChatViewModel @Inject constructor(
             viewModelScope.launch {
                 observeMessagesForAddressUseCase(address).collect { messageList ->
                     messageList.forEach {
-                        if(!it.readOut) {
+                        if (!it.readOut) {
                             updateMessageReadOutStatusUseCase(it.id!!, true)
                         }
                     }

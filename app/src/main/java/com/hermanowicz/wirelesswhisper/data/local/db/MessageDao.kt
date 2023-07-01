@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.hermanowicz.wirelesswhisper.data.model.MessageEntity
-import com.hermanowicz.wirelesswhisper.utils.enums.MessageStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

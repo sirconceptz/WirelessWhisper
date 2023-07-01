@@ -2,6 +2,7 @@ package com.hermanowicz.wirelesswhisper.domain
 
 import android.content.Context
 import com.hermanowicz.wirelesswhisper.R
+import com.hermanowicz.wirelesswhisper.data.model.Chat
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -10,16 +11,17 @@ import javax.inject.Inject
 class GetAllChatsUseCase @Inject constructor(
     @ApplicationContext private val context: Context,
     private val getDeviceAddressUseCase: GetDeviceAddressUseCase
-) : (List<Message>, List<Device>) -> List<Pair<String, String>> {
+) : (List<Message>, List<Device>) -> List<Chat> {
     override fun invoke(
         allMessages: List<Message>,
         allDevices: List<Device>
-    ): List<Pair<String, String>> {
+    ): List<Chat> {
         val currentDeviceAddress = getDeviceAddressUseCase()
-        val allChats: MutableList<Pair<String, String>> = mutableListOf()
-        allMessages.forEach {
+        val allChats: MutableList<Chat> = mutableListOf()
+        val addressList: MutableList<String> = mutableListOf()
+        allMessages.forEach { message ->
             val address =
-                if (it.senderAddress == currentDeviceAddress) it.receiverAddress else it.senderAddress
+                if (message.senderAddress == currentDeviceAddress) message.receiverAddress else message.senderAddress
             var device: Device? = null
             allDevices.forEach { mDevice ->
                 if (mDevice.macAddress == address) {
@@ -27,15 +29,40 @@ class GetAllChatsUseCase @Inject constructor(
                 }
             }
             if (device != null) {
-                if (!allChats.contains(Pair(device!!.name, device!!.macAddress))) {
-                    allChats.add((Pair(device!!.name, device!!.macAddress)))
+                if (!addressList.contains(address)) {
+                    allChats.add(Chat(device!!.name, address, if (message.readOut) 0 else 1))
+                    addressList.add(address)
+                } else {
+                    if (!message.readOut) {
+                        val oldChat = getChatForAddress(address, allChats)
+                        val newChat = oldChat!!.copy(unreadMessages = oldChat.unreadMessages + 1)
+                        allChats.remove(oldChat)
+                        allChats.add(newChat)
+                    }
                 }
             } else {
-                if (!allChats.contains(Pair(context.getString(R.string.unnamed), address))) {
-                    allChats.add((Pair(context.getString(R.string.unnamed), address)))
+                if (!addressList.contains(address)) {
+                    allChats.add(Chat(context.getString(R.string.unnamed), address, if (message.readOut) 0 else 1))
+                    addressList.add(address)
+                } else {
+                    if (!message.readOut) {
+                        val oldChat = getChatForAddress(address, allChats)
+                        val newChat = oldChat!!.copy(unreadMessages = oldChat.unreadMessages + 1)
+                        allChats.remove(oldChat)
+                        allChats.add(newChat)
+                    }
                 }
             }
         }
         return allChats.toList()
+    }
+
+    private fun getChatForAddress(address: String, chatList: List<Chat>): Chat? {
+        chatList.forEach { chat ->
+            if (chat.macAddress == address) {
+                return chat
+            }
+        }
+        return null
     }
 }
