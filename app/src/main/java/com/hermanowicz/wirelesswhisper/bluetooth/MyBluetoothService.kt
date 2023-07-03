@@ -1,8 +1,12 @@
 package com.hermanowicz.wirelesswhisper.bluetooth
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.app.job.JobInfo.PRIORITY_DEFAULT
+import android.app.job.JobInfo.PRIORITY_MIN
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothServerSocket
@@ -324,7 +328,7 @@ class MyBluetoothService() : Service() {
     }
 
     private fun initService() {
-        // startForeground(NOTIFY_ID, generateNotification().build())
+        startForeground()
         startServer()
     }
 
@@ -362,22 +366,6 @@ class MyBluetoothService() : Service() {
         }
     }
 
-    private fun generateNotification(): NotificationCompat.Builder {
-        val mainNotificationText = getString(R.string.app_name)
-        val titleText = getString(R.string.chat_is_active)
-
-        val bigTextStyle =
-            NotificationCompat.BigTextStyle().bigText(getString(R.string.chat_is_active))
-                .setBigContentTitle(getString(R.string.app_name))
-
-        val notificationCompatBuilder = NotificationCompat.Builder(applicationContext, "BT ACTIVE")
-
-        return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText)
-            .setContentText(mainNotificationText).setSmallIcon(R.drawable.ic_launcher_background)
-            .setDefaults(NotificationCompat.DEFAULT_ALL).setOnlyAlertOnce(true).setOngoing(true)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-    }
-
     private fun saveDeviceIfNotSaved(device: Device) {
         var saved = false
         scope.launch {
@@ -399,5 +387,26 @@ class MyBluetoothService() : Service() {
         const val ACTION_CONNECT = "ACTION_CONNECT"
         const val ACTION_DISCONNECT = "ACTION_DISCONNECT"
         const val ACTION_SEND_MESSAGE = "ACTION_SEND_MESSAGE"
+    }
+
+    private fun createNotificationChannel(channelId: String, channelName: String): String{
+        val chan = NotificationChannel(channelId,
+            channelName, NotificationManager.IMPORTANCE_NONE)
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        service.createNotificationChannel(chan)
+        return channelId
+    }
+
+    private fun startForeground() {
+        val channelId = createNotificationChannel("bt_service", "Bluetooth service")
+
+        val notificationBuilder = NotificationCompat.Builder(this, channelId )
+        val notification = notificationBuilder.setOngoing(true)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(PRIORITY_DEFAULT)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+        startForeground(101, notification)
     }
 }

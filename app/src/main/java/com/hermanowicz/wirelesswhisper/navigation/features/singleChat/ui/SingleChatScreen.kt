@@ -2,7 +2,6 @@ package com.hermanowicz.wirelesswhisper.navigation.features.singleChat.ui
 
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -127,7 +126,6 @@ fun MessageBar(
             TextField(value = currentMessage, onValueChange = { onCurrentMessageChange(it) })
         }
         IconButton(onClick = {
-            Toast.makeText(context, currentMessage, Toast.LENGTH_LONG).show()
             sendMessage(context, currentMessage, bluetoothService, clearTextField = clearTextField)
         }) {
             Icon(painter = painterResource(id = R.drawable.ic_send), contentDescription = null)
