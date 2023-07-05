@@ -3,11 +3,14 @@ package com.hermanowicz.wirelesswhisper.navigation.features.allChats.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.domain.DeleteMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.GetAllChatsUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveAllMessagesUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveAllPairedDevicesUseCase
+import com.hermanowicz.wirelesswhisper.domain.ObserveMessagesForAddressUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.allChats.state.AllChatsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +23,9 @@ import javax.inject.Inject
 class AllChatsViewModel @Inject constructor(
     private val observeAllMessagesUseCase: ObserveAllMessagesUseCase,
     private val observeAllPairedDevicesUseCase: ObserveAllPairedDevicesUseCase,
-    private val getAllChatsUseCase: GetAllChatsUseCase
+    private val getAllChatsUseCase: GetAllChatsUseCase,
+    private val observeMessagesForAddressUseCase: ObserveMessagesForAddressUseCase,
+    private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<AllChatsUiState> = MutableStateFlow(AllChatsUiState())
 
@@ -60,5 +65,15 @@ class AllChatsViewModel @Inject constructor(
 
     fun onSelectNewMessageDevice(device: Device?) {
         _uiState.update { it.copy(newMessageDevice = device) }
+    }
+
+    fun deleteSingleChat(address: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            observeMessagesForAddressUseCase(address).collect { messageList ->
+                messageList.forEach { message ->
+                    message.id?.let { deleteMessageLocallyUseCase(it) }
+                }
+            }
+        }
     }
 }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -55,7 +54,7 @@ fun PairedDevicesScreen(
                                 .clickable { onClickPairedDevice(device.macAddress) },
                             text = device.name,
                             style = TextStyle.Default.copy(
-                                color = MaterialTheme.colorScheme.surface,
+                                color = Color.White,
                                 textAlign = TextAlign.Center
                             )
                         )

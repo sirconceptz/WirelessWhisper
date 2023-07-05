@@ -1,7 +1,6 @@
 package com.hermanowicz.wirelesswhisper.navigation
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.SnackbarDefaults
 import androidx.compose.material.contentColorFor
@@ -15,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
@@ -35,7 +33,6 @@ import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.SingleChat
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
-    val context = LocalContext.current
 
     Surface(
         modifier = Modifier.fillMaxSize(),

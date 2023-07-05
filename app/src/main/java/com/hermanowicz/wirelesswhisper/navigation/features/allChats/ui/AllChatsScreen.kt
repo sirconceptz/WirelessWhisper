@@ -13,8 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,8 +38,10 @@ import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogNewMessage
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.data.model.Chat
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllChatsScreen(
     onClickSingleChat: (String) -> Unit,
@@ -70,39 +81,82 @@ fun AllChatsScreen(
                 .fillMaxSize()
                 .padding(LocalSpacing.current.medium)
         ) {
-            uiState.chatList.forEach {
-                item {
-                    Box(modifier = Modifier.clickable { onClickSingleChat(it.macAddress) }) {
-                        CardPrimary {
-                            if (it.unreadMessages == 0) {
-                                Text(text = it.deviceName, color = Color.White)
-                            } else {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = it.deviceName, color = Color.White)
-                                    Box(
-                                        modifier = Modifier
-                                            .height(30.dp)
-                                            .aspectRatio(1f)
-                                            .background(Color.White, shape = CircleShape)
-                                            .border(
-                                                BorderStroke(3.dp, Color.Black),
-                                                shape = CircleShape
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = it.unreadMessages.toString(),
-                                            color = Color.Black,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
+            itemsIndexed(
+                items = uiState.chatList,
+                key = { _: Int, item: Chat -> item.hashCode() }
+            ) { _: Int, item: Chat ->
+                val state = rememberDismissState(
+                    confirmValueChange = {
+                        if (it == DismissValue.DismissedToStart) {
+                            viewModel.deleteSingleChat(item.macAddress)
                         }
+                        true
+                    }
+                )
+
+                SwipeToDismiss(
+                    state = state,
+                    background = {
+                        val color = when (state.dismissDirection) {
+                            DismissDirection.StartToEnd -> Color.Transparent
+                            DismissDirection.EndToStart -> Color.Red
+                            null -> Color.Transparent
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(color)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.align(Alignment.CenterEnd)
+                            )
+                        }
+                    },
+                    dismissContent = {
+                        SingleChat(onClickSingleChat = onClickSingleChat, chat = item)
+                    },
+                    directions = setOf(DismissDirection.EndToStart)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SingleChat(
+    onClickSingleChat: (String) -> Unit,
+    chat: Chat
+) {
+    Box(modifier = Modifier.clickable { onClickSingleChat(chat.macAddress) }) {
+        CardPrimary {
+            if (chat.unreadMessages == 0) {
+                Text(text = chat.deviceName, color = Color.White)
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = chat.deviceName, color = Color.White)
+                    Box(
+                        modifier = Modifier
+                            .height(30.dp)
+                            .aspectRatio(1f)
+                            .background(Color.White, shape = CircleShape)
+                            .border(
+                                BorderStroke(3.dp, Color.Black),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = chat.unreadMessages.toString(),
+                            color = Color.Black,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }

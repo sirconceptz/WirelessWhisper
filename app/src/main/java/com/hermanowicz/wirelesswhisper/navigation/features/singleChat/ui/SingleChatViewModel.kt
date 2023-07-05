@@ -5,12 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
-import com.hermanowicz.wirelesswhisper.domain.ObserveAllMessagesUseCase
+import com.hermanowicz.wirelesswhisper.domain.DeleteMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveMessagesForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.UpdateMessageReadOutStatusUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.state.SingleChatUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,9 +23,9 @@ import javax.inject.Inject
 class SingleChatViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val observeMessagesForAddressUseCase: ObserveMessagesForAddressUseCase,
-    private val observeAllMessagesUseCase: ObserveAllMessagesUseCase,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
-    private val updateMessageReadOutStatusUseCase: UpdateMessageReadOutStatusUseCase
+    private val updateMessageReadOutStatusUseCase: UpdateMessageReadOutStatusUseCase,
+    private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -76,5 +77,15 @@ class SingleChatViewModel @Inject constructor(
 
     fun onCurrentMessageChange(currentMessage: String) {
         _uiState.update { it.copy(currentMessage = currentMessage) }
+    }
+
+    fun deleteSingleMessage(messageId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteMessageLocallyUseCase(messageId)
+        }
+    }
+
+    fun onClickEditMode(editMode: Boolean) {
+        _uiState.update { it.copy(deleteMode = editMode) }
     }
 }

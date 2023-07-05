@@ -2,23 +2,28 @@ package com.hermanowicz.wirelesswhisper.navigation.features.singleChat.ui
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +54,16 @@ fun SingleChatScreen(
                     contentDescription = null
                 )
             }
+        },
+        actions = {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
+            )
         }
     ) {
         ChatView(
@@ -58,7 +73,9 @@ fun SingleChatScreen(
             onCurrentMessageChange = {
                 viewModel.onCurrentMessageChange(it)
             },
-            clearTextField = { viewModel.clearCurrentMessage() }
+            clearTextField = { viewModel.clearCurrentMessage() },
+            deleteMode = uiState.deleteMode,
+            onClickDelete = { viewModel.deleteSingleMessage(it.id!!) }
         )
     }
 }
@@ -69,7 +86,9 @@ fun ChatView(
     bluetoothService: Intent,
     currentMessage: String,
     onCurrentMessageChange: (String) -> Unit,
-    clearTextField: () -> Unit
+    clearTextField: () -> Unit,
+    deleteMode: Boolean,
+    onClickDelete: (Message) -> Unit
 ) {
     Column() {
         Column(
@@ -77,7 +96,7 @@ fun ChatView(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            MessagesBox(messageList)
+            MessagesBox(messageList, deleteMode = deleteMode, onClickDelete = onClickDelete)
         }
         MessageBar(
             bluetoothService,
@@ -89,16 +108,37 @@ fun ChatView(
 }
 
 @Composable
-fun MessagesBox(messageList: List<Message>) {
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+fun MessagesBox(messageList: List<Message>, deleteMode: Boolean, onClickDelete: (Message) -> Unit) {
+    val lazyColumnListState = rememberLazyListState()
+
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        state = lazyColumnListState
+    ) {
         messageList.forEach { message ->
             item {
                 if (message.received) {
-                    ChatReceived(text = message.message, timestamp = message.timestamp)
+                    ChatReceived(
+                        text = message.message,
+                        timestamp = message.timestamp,
+                        deleteMode = deleteMode,
+                        onClickDelete = { onClickDelete(message) }
+                    )
                 } else {
-                    ChatSend(text = message.message, timestamp = message.timestamp)
+                    ChatSend(
+                        text = message.message,
+                        timestamp = message.timestamp,
+                        deleteMode = deleteMode,
+                        onClickDelete = { onClickDelete(message) }
+                    )
                 }
             }
+        }
+    }
+
+    LaunchedEffect(messageList.size) {
+        if (messageList.size > 1) {
+            lazyColumnListState.scrollToItem(messageList.size - 1)
         }
     }
 }

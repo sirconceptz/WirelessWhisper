@@ -1,6 +1,8 @@
 package com.hermanowicz.wirelesswhisper.components.chatBubble
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -12,15 +14,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -32,7 +39,9 @@ import com.hermanowicz.wirelesswhisper.utils.DateFormatter
 @Composable
 fun ChatReceived(
     text: String,
-    timestamp: Long
+    timestamp: Long,
+    deleteMode: Boolean,
+    onClickDelete: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -41,14 +50,33 @@ fun ChatReceived(
                 end = LocalSpacing.current.small,
                 top = LocalSpacing.current.tiny,
                 bottom = LocalSpacing.current.tiny
-            ),
+            )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                    }
+                )
+            },
         horizontalArrangement = Arrangement.Start
     ) {
         Column() {
             Row(
-                modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(),
+                modifier = Modifier
+                    .height(IntrinsicSize.Max)
+                    .fillMaxWidth()
+                    .padding(start = if (deleteMode) 8.dp else 0.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
+                if (deleteMode) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .clickable { onClickDelete() }
+                    )
+                }
                 Column(
                     modifier = Modifier
                         .background(
@@ -100,13 +128,5 @@ class TriangleLeftEdgeShape(private val offset: Int) : Shape {
             lineTo(x = size.width + 1 - offset, y = size.height)
         }
         return Outline.Generic(path = trianglePath)
-    }
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    Column {
-        ChatReceived(text = "xyz", System.currentTimeMillis())
     }
 }

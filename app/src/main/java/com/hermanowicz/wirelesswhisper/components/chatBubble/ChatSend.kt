@@ -1,6 +1,7 @@
 package com.hermanowicz.wirelesswhisper.components.chatBubble
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -12,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
@@ -31,7 +37,9 @@ import com.hermanowicz.wirelesswhisper.utils.DateFormatter
 @Composable
 fun ChatSend(
     text: String,
-    timestamp: Long
+    timestamp: Long,
+    deleteMode: Boolean,
+    onClickDelete: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -45,7 +53,10 @@ fun ChatSend(
     ) {
         Column() {
             Row(
-                modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(),
+                modifier = Modifier
+                    .height(IntrinsicSize.Max)
+                    .fillMaxWidth()
+                    .padding(end = if (deleteMode) 8.dp else 0.dp),
                 horizontalArrangement = Arrangement.End
             ) {
                 Column(
@@ -73,6 +84,16 @@ fun ChatSend(
                         .width(8.dp)
                         .fillMaxHeight()
                 ) {}
+                if (deleteMode) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .clickable { onClickDelete() }
+                    )
+                }
             }
             Text(
                 modifier = Modifier

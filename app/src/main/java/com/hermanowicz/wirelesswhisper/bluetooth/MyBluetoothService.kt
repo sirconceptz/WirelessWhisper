@@ -2,11 +2,8 @@ package com.hermanowicz.wirelesswhisper.bluetooth
 
 import android.annotation.SuppressLint
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.app.job.JobInfo.PRIORITY_DEFAULT
-import android.app.job.JobInfo.PRIORITY_MIN
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothServerSocket
@@ -19,6 +16,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
@@ -27,6 +25,9 @@ import com.hermanowicz.wirelesswhisper.domain.ObserveAllPairedDevicesUseCase
 import com.hermanowicz.wirelesswhisper.domain.SaveMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.SavePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.domain.UpdateDeviceConnectionStatusUseCase
+import com.hermanowicz.wirelesswhisper.utils.Constants.BT_SERVICE_CHANNEL_ID
+import com.hermanowicz.wirelesswhisper.utils.NotificationBuilder
+import com.hermanowicz.wirelesswhisper.utils.NotificationChannel.Companion.createNotificationChannel
 import com.hermanowicz.wirelesswhisper.utils.Secrets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -41,8 +42,6 @@ import java.util.UUID
 import javax.inject.Inject
 
 private const val TAG = "MY_BLUETOOTH_MANAGER"
-
-const val NOTIFY_ID = 5
 
 // Defines several constants used when transmitting messages between the
 // service and the UI.
@@ -87,6 +86,7 @@ class MyBluetoothService() : Service() {
         private val mmOutStream: OutputStream = mmSocket.outputStream
         private val mmBuffer: ByteArray = ByteArray(1024) // mmBuffer store for the stream
 
+        @SuppressLint("MissingPermission")
         override fun run() {
             var numBytes: Int // bytes returned from read()
 
@@ -122,6 +122,7 @@ class MyBluetoothService() : Service() {
                     Timber.d("Received message: $message")
                     saveMessageLocallyUseCase(message)
                 }
+                showNotification()
                 readMsg.sendToTarget()
             }
         }
@@ -177,6 +178,17 @@ class MyBluetoothService() : Service() {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun showNotification() {
+        with(NotificationManagerCompat.from(context)) {
+            notify(
+                42,
+                NotificationBuilder.buildNotification(context)
+                    .build()
+            )
+        }
+    }
+
     inner class ClientThread(address: String) : Thread() {
 
         private lateinit var bluetoothAdapter: BluetoothAdapter
@@ -215,7 +227,14 @@ class MyBluetoothService() : Service() {
                     connected = true
                 )
                 saveDeviceIfNotSaved(device)
-                Timber.d("Bluetooth: Connected to " + socket.remoteDevice.address)
+                Timber.d("Bluetooth: Connected to " + socket.remoteDevice.name)
+                handler.post {
+                    Toast.makeText(
+                        context,
+                        "Connected to " + socket.remoteDevice.name,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
 
@@ -257,7 +276,7 @@ class MyBluetoothService() : Service() {
                     null
                 }
                 socket?.also {
-                    Timber.d("Bluetooth: Connected to " + it.remoteDevice.address)
+                    Timber.d("Bluetooth: Connected to " + it.remoteDevice.name)
                     setConnectedThread(it)
                     val device = Device(
                         macAddress = socket.remoteDevice.address,
@@ -268,7 +287,7 @@ class MyBluetoothService() : Service() {
                     handler.post {
                         Toast.makeText(
                             context,
-                            "Connected to " + socket.remoteDevice.address,
+                            "Connected to " + socket.remoteDevice.name,
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -377,6 +396,8 @@ class MyBluetoothService() : Service() {
                 }
                 if (!saved) {
                     savePairedDevicesUseCase(device)
+                } else {
+                    updateDeviceConnectionStatusUseCase(device.macAddress, true)
                 }
             }
         }
@@ -389,22 +410,13 @@ class MyBluetoothService() : Service() {
         const val ACTION_SEND_MESSAGE = "ACTION_SEND_MESSAGE"
     }
 
-    private fun createNotificationChannel(channelId: String, channelName: String): String{
-        val chan = NotificationChannel(channelId,
-            channelName, NotificationManager.IMPORTANCE_NONE)
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        service.createNotificationChannel(chan)
-        return channelId
-    }
-
     private fun startForeground() {
-        val channelId = createNotificationChannel("bt_service", "Bluetooth service")
+        val channelId =
+            createNotificationChannel(context, BT_SERVICE_CHANNEL_ID, getString(R.string.bluetooth))
 
-        val notificationBuilder = NotificationCompat.Builder(this, channelId )
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
         val notification = notificationBuilder.setOngoing(true)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setPriority(PRIORITY_DEFAULT)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
         startForeground(101, notification)
