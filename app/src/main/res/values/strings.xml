@@ -29,4 +29,5 @@
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="you_received_new_message">You received a new message</string>
+    <string name="connected_to">Connected to</string>
 </resources>

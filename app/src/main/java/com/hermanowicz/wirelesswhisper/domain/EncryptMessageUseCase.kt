@@ -1,11 +1,11 @@
 package com.hermanowicz.wirelesswhisper.domain
 
-import com.hermanowicz.wirelesswhisper.data.model.DecryptedMessage
 import com.hermanowicz.wirelesswhisper.data.model.EncryptedMessage
+import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.utils.AESFromPassword
+import com.hermanowicz.wirelesswhisper.utils.RandomNonce
 import com.hermanowicz.wirelesswhisper.utils.Secrets.AES_PASS
 import java.nio.ByteBuffer
-import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -16,19 +16,17 @@ private const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
 
 private const val TAG_LENGTH_BIT = 128
 
-private const val IV_LENGTH_BYTE = 12
 private const val SALT_LENGTH_BYTE = 16
 
-class EncryptMessageUseCase @Inject constructor() : (DecryptedMessage) -> EncryptedMessage {
-    override fun invoke(descryptedMessage: DecryptedMessage): EncryptedMessage {
-        val salt: ByteArray = getRandomNonce(SALT_LENGTH_BYTE)
-        val iv: ByteArray = getRandomNonce(IV_LENGTH_BYTE)
+class EncryptMessageUseCase @Inject constructor() : (Message, ByteArray) -> EncryptedMessage {
+    override fun invoke(message: Message, iv: ByteArray): EncryptedMessage {
+        val salt: ByteArray = RandomNonce.getRandomNonce(SALT_LENGTH_BYTE)
 
         val aesKeyFromPassword: SecretKey = AESFromPassword.get(AES_PASS.toCharArray(), salt)
         val cipher = Cipher.getInstance(ENCRYPT_ALGO)
 
         cipher.init(Cipher.ENCRYPT_MODE, aesKeyFromPassword, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-        val cipherText = cipher.doFinal(descryptedMessage.message.toByteArray())
+        val cipherText = cipher.doFinal(message.message.toByteArray())
 
         val cipherTextWithIvSalt: ByteArray =
             ByteBuffer.allocate(iv.size + salt.size + cipherText.size)
@@ -37,18 +35,12 @@ class EncryptMessageUseCase @Inject constructor() : (DecryptedMessage) -> Encryp
                 .put(cipherText)
                 .array()
 
-        val message = Base64.getEncoder().encodeToString(cipherTextWithIvSalt)
+        val text = Base64.getEncoder().encodeToString(cipherTextWithIvSalt)
         return EncryptedMessage(
-            message = message.toByteArray(),
+            message = text,
             iv = iv,
-            timestamp = descryptedMessage.timestamp,
-            senderMacAddress = descryptedMessage.senderMacAddress
+            timestamp = message.timestamp,
+            senderAddress = message.senderAddress
         )
-    }
-
-    private fun getRandomNonce(size: Int): ByteArray {
-        val nonce = ByteArray(size)
-        SecureRandom().nextBytes(nonce)
-        return nonce
     }
 }

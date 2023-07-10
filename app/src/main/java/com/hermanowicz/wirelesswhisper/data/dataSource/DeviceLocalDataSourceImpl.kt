@@ -39,4 +39,8 @@ class DeviceLocalDataSourceImpl @Inject constructor(
     override suspend fun deleteDevice(macAddress: String) {
         dao.delete(macAddress)
     }
+
+    override suspend fun updateEncryptionKey(address: String, key: ByteArray) {
+        dao.updateEncryptionKey(address, key)
+    }
 }

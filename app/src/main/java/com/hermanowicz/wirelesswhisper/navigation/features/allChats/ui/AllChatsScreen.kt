@@ -7,11 +7,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -132,34 +134,59 @@ private fun SingleChat(
 ) {
     Box(modifier = Modifier.clickable { onClickSingleChat(chat.macAddress) }) {
         CardPrimary {
-            if (chat.unreadMessages == 0) {
-                Text(text = chat.deviceName, color = Color.White)
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (chat.unreadMessages == 0) {
                     Text(text = chat.deviceName, color = Color.White)
-                    Box(
-                        modifier = Modifier
-                            .height(30.dp)
-                            .aspectRatio(1f)
-                            .background(Color.White, shape = CircleShape)
-                            .border(
-                                BorderStroke(3.dp, Color.Black),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = chat.unreadMessages.toString(),
-                            color = Color.Black,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    ConnectionStatusBox(status = chat.deviceConnectionStatus)
+                } else {
+                    Text(text = chat.deviceName, color = Color.White)
+                    Spacer(modifier = Modifier.weight(1f))
+                    UnreadMessagesBox(chat.unreadMessages.toString())
+                    Spacer(modifier = Modifier.width(LocalSpacing.current.medium))
+                    ConnectionStatusBox(status = chat.deviceConnectionStatus)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun UnreadMessagesBox(counter: String) {
+    Box(
+        modifier = Modifier
+            .height(30.dp)
+            .aspectRatio(1f)
+            .background(Color.White, shape = CircleShape)
+            .border(
+                BorderStroke(3.dp, Color.Black),
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = counter,
+            color = Color.Black,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun ConnectionStatusBox(status: Boolean) {
+    Box(
+        modifier = Modifier
+            .height(20.dp)
+            .aspectRatio(1f)
+            .background(if (status) Color.Green else Color.Red, shape = CircleShape)
+            .border(
+                BorderStroke(0.dp, Color.Black),
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {}
 }

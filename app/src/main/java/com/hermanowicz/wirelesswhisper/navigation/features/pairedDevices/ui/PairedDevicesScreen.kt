@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -25,7 +27,7 @@ fun PairedDevicesScreen(
     bottomBar: @Composable () -> Unit,
     viewModel: PairedDevicesViewModel = hiltViewModel()
 ) {
-    val pairedDevices = viewModel.pairedDevices
+    val uiState by viewModel.uiState.collectAsState()
 
     TopBarScaffold(
         topBarText = stringResource(id = R.string.paired_devices),
@@ -46,7 +48,7 @@ fun PairedDevicesScreen(
                 .padding(LocalSpacing.current.medium)
         ) {
             item {
-                pairedDevices.forEach { device ->
+                uiState.deviceList.forEach { device ->
                     CardPrimary {
                         Text(
                             modifier = Modifier

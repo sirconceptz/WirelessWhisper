@@ -29,4 +29,7 @@ interface DeviceDao {
 
     @Query("UPDATE device SET connected = :connectionStatus WHERE macAddress IN (:macAddress)")
     suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)
+
+    @Query("UPDATE device SET encryptionKey = :key WHERE macAddress IN (:macAddress)")
+    suspend fun updateEncryptionKey(macAddress: String, key: ByteArray)
 }

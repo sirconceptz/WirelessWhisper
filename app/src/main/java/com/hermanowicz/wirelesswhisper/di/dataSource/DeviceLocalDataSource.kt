@@ -16,6 +16,7 @@ interface DeviceLocalDataSource {
     suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)
     suspend fun updateName(macAddress: String, newName: String)
     suspend fun deleteDevice(macAddress: String)
+    suspend fun updateEncryptionKey(address: String, key: ByteArray)
 }
 
 @Module

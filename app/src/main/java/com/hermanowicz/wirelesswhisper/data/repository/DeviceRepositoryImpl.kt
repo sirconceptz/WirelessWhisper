@@ -36,4 +36,8 @@ class DeviceRepositoryImpl @Inject constructor(
     override suspend fun deleteDevice(macAddress: String) {
         localDataSource.deleteDevice(macAddress)
     }
+
+    override suspend fun updateEncryptionKey(address: String, key: ByteArray) {
+        localDataSource.updateEncryptionKey(address, key)
+    }
 }

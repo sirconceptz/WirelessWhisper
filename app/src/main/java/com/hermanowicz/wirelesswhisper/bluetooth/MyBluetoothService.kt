@@ -19,12 +19,18 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.data.model.EncryptedMessage
 import com.hermanowicz.wirelesswhisper.data.model.Message
+import com.hermanowicz.wirelesswhisper.domain.DecryptMessageUseCase
+import com.hermanowicz.wirelesswhisper.domain.EncryptMessageUseCase
+import com.hermanowicz.wirelesswhisper.domain.GenerateEncryptionKeyUseCase
 import com.hermanowicz.wirelesswhisper.domain.GetDeviceAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveAllPairedDevicesUseCase
+import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.SaveMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.SavePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.domain.UpdateDeviceConnectionStatusUseCase
+import com.hermanowicz.wirelesswhisper.domain.UpdateEncryptionKeyInDeviceUseCase
 import com.hermanowicz.wirelesswhisper.utils.Constants.BT_SERVICE_CHANNEL_ID
 import com.hermanowicz.wirelesswhisper.utils.NotificationBuilder
 import com.hermanowicz.wirelesswhisper.utils.NotificationChannel.Companion.createNotificationChannel
@@ -33,7 +39,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -77,6 +86,21 @@ class MyBluetoothService() : Service() {
     @Inject
     lateinit var updateDeviceConnectionStatusUseCase: UpdateDeviceConnectionStatusUseCase
 
+    @Inject
+    lateinit var encryptMessageUseCase: EncryptMessageUseCase
+
+    @Inject
+    lateinit var decryptMessageUseCase: DecryptMessageUseCase
+
+    @Inject
+    lateinit var observeDeviceAddressUseCase: ObserveDeviceForAddressUseCase
+
+    @Inject
+    lateinit var updateEncryptionKeyInDeviceUseCase: UpdateEncryptionKeyInDeviceUseCase
+
+    @Inject
+    lateinit var generateEncryptionKeyUseCase: GenerateEncryptionKeyUseCase
+
     private val job by lazy { SupervisorJob() }
     private val scope by lazy { CoroutineScope(Dispatchers.IO + job) }
 
@@ -107,20 +131,29 @@ class MyBluetoothService() : Service() {
                     -1,
                     mmBuffer
                 )
-                val text = String(mmBuffer, 0, readMsg.arg1)
 
-                scope.launch {
-                    val message = Message(
-                        id = null,
-                        senderAddress = mmSocket.remoteDevice.address,
-                        receiverAddress = getDeviceAddressUseCase(),
-                        timestamp = System.currentTimeMillis(),
-                        readOut = false,
-                        received = true,
-                        message = text
-                    )
-                    Timber.d("Received message: $message")
-                    saveMessageLocallyUseCase(message)
+                val text = String(mmBuffer, 0, readMsg.arg1)
+                if (text.length < 30) {
+                    scope.launch {
+                        updateEncryptionKeyInDeviceUseCase(mmSocket.remoteDevice.address, text.toByteArray())
+                    }
+                } else {
+                    scope.launch {
+                        val device =
+                            observeDeviceAddressUseCase(mmSocket.remoteDevice.address).first()
+                        val encryptedMessage = EncryptedMessage(
+                            message = text,
+                            timestamp = System.currentTimeMillis(),
+                            iv = device.encryptionKey,
+                            senderAddress = device.macAddress
+                        )
+                        val decryptedMessage: Message? = decryptMessageUseCase(encryptedMessage)
+                        if (decryptedMessage != null) {
+                            saveMessageLocallyUseCase(decryptedMessage)
+                        } else {
+                            exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
+                        }
+                    }
                 }
                 showNotification()
                 readMsg.sendToTarget()
@@ -128,9 +161,21 @@ class MyBluetoothService() : Service() {
         }
 
         // Call this from the main activity to send data to the remote device.
-        fun write(content: String) {
+        suspend fun write(content: String) {
             try {
-                mmOutStream.write(content.toByteArray())
+                val device =
+                    scope.async { observeDeviceAddressUseCase(mmSocket.remoteDevice.address).first() }
+                val decryptedMessage = Message(
+                    id = null,
+                    message = content,
+                    timestamp = System.currentTimeMillis(),
+                    senderAddress = getDeviceAddressUseCase()
+                )
+                val encryptedMessage =
+                    encryptMessageUseCase(decryptedMessage, device.await().encryptionKey)
+                withContext(Dispatchers.IO) {
+                    mmOutStream.write(encryptedMessage.message.toByteArray())
+                }
                 scope.launch {
                     val message = Message(
                         id = null,
@@ -139,10 +184,37 @@ class MyBluetoothService() : Service() {
                         timestamp = System.currentTimeMillis(),
                         readOut = true,
                         received = false,
-                        message = content
+                        message = decryptedMessage.message
                     )
-                    Timber.d("Sent: $message")
                     saveMessageLocallyUseCase(message)
+                }
+            } catch (e: IOException) {
+                Timber.e(TAG, "Error occurred when sending data", e)
+
+                // Send a failure message back to the activity.
+                val writeErrorMsg = handler.obtainMessage(MESSAGE_TOAST)
+                val bundle = Bundle().apply {
+                    putString("toast", "Couldn't send data to the other device")
+                }
+                writeErrorMsg.data = bundle
+                handler.sendMessage(writeErrorMsg)
+                return
+            }
+
+            // Share the sent message with the UI activity.
+            val writtenMsg = handler.obtainMessage(
+                MESSAGE_WRITE,
+                -1,
+                -1,
+                mmBuffer
+            )
+            writtenMsg.sendToTarget()
+        }
+
+        suspend fun sendKey(key: ByteArray) {
+            try {
+                withContext(Dispatchers.IO) {
+                    mmOutStream.write(key)
                 }
             } catch (e: IOException) {
                 Timber.e(TAG, "Error occurred when sending data", e)
@@ -176,6 +248,17 @@ class MyBluetoothService() : Service() {
                 Timber.e(TAG, "Could not close the connect socket", e)
             }
         }
+    }
+
+    private suspend fun exchangeNewEncryptionKey(
+        address: String
+    ) {
+        val generatedKey = generateEncryptionKeyUseCase()
+        connectedThread?.sendKey(generatedKey)
+        updateEncryptionKeyInDeviceUseCase(
+            address,
+            generatedKey
+        )
     }
 
     @SuppressLint("MissingPermission")
@@ -226,7 +309,7 @@ class MyBluetoothService() : Service() {
                     name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
                     connected = true
                 )
-                saveDeviceIfNotSaved(device)
+                saveDeviceIfNotSaved(device = device, checkKey = true)
                 Timber.d("Bluetooth: Connected to " + socket.remoteDevice.name)
                 handler.post {
                     Toast.makeText(
@@ -276,23 +359,21 @@ class MyBluetoothService() : Service() {
                     null
                 }
                 socket?.also {
-                    Timber.d("Bluetooth: Connected to " + it.remoteDevice.name)
+                    Timber.d(getString(R.string.connected_to) + " " + it.remoteDevice.name)
                     setConnectedThread(it)
                     val device = Device(
                         macAddress = socket.remoteDevice.address,
                         name = socket.remoteDevice.name ?: context.getString(R.string.unnamed),
                         connected = true
                     )
-                    saveDeviceIfNotSaved(device)
+                    saveDeviceIfNotSaved(device = device, checkKey = false)
                     handler.post {
                         Toast.makeText(
                             context,
-                            "Connected to " + socket.remoteDevice.name,
+                            getString(R.string.connected_to) + " " + it.remoteDevice.name,
                             Toast.LENGTH_LONG
                         ).show()
                     }
-                    mmServerSocket?.close()
-                    shouldLoop = false
                 }
             }
         }
@@ -367,35 +448,47 @@ class MyBluetoothService() : Service() {
         if (clientThread != null) {
             try {
                 clientThread!!.cancel()
-                if (currentMacAddress != null) {
-                    scope.launch {
-                        updateDeviceConnectionStatusUseCase(currentMacAddress!!, false)
-                        currentMacAddress = null
-                    }
-                }
             } catch (_: IOException) {
+            }
+        }
+        if (currentMacAddress != null) {
+            scope.launch {
+                updateDeviceConnectionStatusUseCase(currentMacAddress!!, false)
+                currentMacAddress = null
             }
         }
         startServer()
     }
 
-    private fun sendMessage(message: String) {
+    private fun sendMessage(content: String) {
         if (connectedThread != null) {
-            connectedThread!!.write(message)
+            scope.launch {
+                connectedThread!!.write(content)
+            }
         }
     }
 
-    private fun saveDeviceIfNotSaved(device: Device) {
+    private fun saveDeviceIfNotSaved(
+        device: Device,
+        checkKey: Boolean
+    ) {
         var saved = false
+        var validKey = false
         scope.launch {
             observeAllPairedDevicesUseCase().collect { devices ->
                 devices.forEach { singleDevice ->
                     if (singleDevice.macAddress == device.macAddress) {
                         saved = true
+                        if (singleDevice.encryptionKey.isNotEmpty()) {
+                            validKey = true
+                        }
                     }
                 }
                 if (!saved) {
                     savePairedDevicesUseCase(device)
+                    if (!validKey && checkKey) {
+                        exchangeNewEncryptionKey(device.macAddress)
+                    }
                 } else {
                     updateDeviceConnectionStatusUseCase(device.macAddress, true)
                 }

@@ -30,7 +30,14 @@ class GetAllChatsUseCase @Inject constructor(
             }
             if (device != null) {
                 if (!addressList.contains(address)) {
-                    allChats.add(Chat(device!!.name, address, if (message.readOut) 0 else 1))
+                    allChats.add(
+                        Chat(
+                            deviceName = device!!.name,
+                            macAddress = address,
+                            unreadMessages = if (message.readOut) 0 else 1,
+                            deviceConnectionStatus = device!!.connected
+                        )
+                    )
                     addressList.add(address)
                 } else {
                     if (!message.readOut) {
@@ -42,7 +49,14 @@ class GetAllChatsUseCase @Inject constructor(
                 }
             } else {
                 if (!addressList.contains(address)) {
-                    allChats.add(Chat(context.getString(R.string.unnamed), address, if (message.readOut) 0 else 1))
+                    allChats.add(
+                        Chat(
+                            deviceName = context.getString(R.string.unnamed),
+                            macAddress = address,
+                            unreadMessages = if (message.readOut) 0 else 1,
+                            deviceConnectionStatus = false
+                        )
+                    )
                     addressList.add(address)
                 } else {
                     if (!message.readOut) {
