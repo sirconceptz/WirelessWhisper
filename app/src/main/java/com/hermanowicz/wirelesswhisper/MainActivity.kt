@@ -16,13 +16,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        bluetoothServiceIntent = Intent(this, MyBluetoothService::class.java)
-        bluetoothServiceIntent.action = MyBluetoothService.ACTION_START
-        startService(bluetoothServiceIntent)
+        setServiceAction(MyBluetoothService.ACTION_START)
         setContent {
             WirelessWhisperTheme {
                 AppNavHost()
             }
         }
+    }
+
+    private fun setServiceAction(action: String) {
+        bluetoothServiceIntent = Intent(this, MyBluetoothService::class.java)
+        bluetoothServiceIntent.action = action
+        startService(bluetoothServiceIntent)
+    }
+
+    override fun onDestroy() {
+        setServiceAction(MyBluetoothService.ACTION_DISCONNECT_ALL_DEVICES)
+        super.onDestroy()
     }
 }

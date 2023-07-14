@@ -17,16 +17,17 @@ private fun Preview() {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.tiny)
         ) {
-            ChatReceived("Short message", System.currentTimeMillis(), false, {})
-            ChatSend("My short message", System.currentTimeMillis(), false, {})
+            ChatReceived("Short message", System.currentTimeMillis(), false, {}, {})
+            ChatSend("My short message", System.currentTimeMillis(), false, {}, {})
             ChatReceived(
                 "But this is long message and I have to test how it's working with longer texts.",
                 System.currentTimeMillis(),
                 true,
+                {},
                 {}
             )
-            ChatSend("My second short message", System.currentTimeMillis(), true, {})
-            ChatSend("My third short message", System.currentTimeMillis(), false, {})
+            ChatSend("My second short message", System.currentTimeMillis(), true, {}, {})
+            ChatSend("My third short message", System.currentTimeMillis(), false, {}, {})
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
+import com.hermanowicz.wirelesswhisper.domain.CopyMessageToClipboardUseCase
 import com.hermanowicz.wirelesswhisper.domain.DeleteMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveMessagesForAddressUseCase
@@ -25,7 +26,8 @@ class SingleChatViewModel @Inject constructor(
     private val observeMessagesForAddressUseCase: ObserveMessagesForAddressUseCase,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
     private val updateMessageReadOutStatusUseCase: UpdateMessageReadOutStatusUseCase,
-    private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase
+    private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase,
+    private val copyMessageToClipboardUseCase: CopyMessageToClipboardUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -87,5 +89,9 @@ class SingleChatViewModel @Inject constructor(
 
     fun onClickEditMode(editMode: Boolean) {
         _uiState.update { it.copy(deleteMode = editMode) }
+    }
+
+    fun copyMessageToClipboard(message: String) {
+        copyMessageToClipboardUseCase(message)
     }
 }

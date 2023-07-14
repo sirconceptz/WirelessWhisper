@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.bluetooth.MyBluetoothService
+import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatError
 import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatReceived
 import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatSend
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
@@ -45,17 +46,14 @@ fun SingleChatScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    TopBarScaffold(
-        topBarText = uiState.device.name,
-        navigationIcon = {
-            IconButton(onClick = navigationIconClick) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = null
-                )
-            }
-        },
-        actions = {
+    TopBarScaffold(topBarText = uiState.device.name, navigationIcon = {
+        IconButton(onClick = navigationIconClick) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                contentDescription = null
+            )
+        }
+    }, actions = {
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = null,
@@ -64,8 +62,7 @@ fun SingleChatScreen(
                     .align(Alignment.CenterVertically)
                     .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
             )
-        }
-    ) {
+        }) {
         ChatView(
             messageList = uiState.messageList,
             bluetoothService = bluetoothService,
@@ -75,7 +72,8 @@ fun SingleChatScreen(
             },
             clearTextField = { viewModel.clearCurrentMessage() },
             deleteMode = uiState.deleteMode,
-            onClickDelete = { viewModel.deleteSingleMessage(it.id!!) }
+            onClickDelete = { viewModel.deleteSingleMessage(it.id!!) },
+            onCopyMessageToClipboard = { viewModel.copyMessageToClipboard(it) }
         )
     }
 }
@@ -88,7 +86,8 @@ fun ChatView(
     onCurrentMessageChange: (String) -> Unit,
     clearTextField: () -> Unit,
     deleteMode: Boolean,
-    onClickDelete: (Message) -> Unit
+    onClickDelete: (Message) -> Unit,
+    onCopyMessageToClipboard: (String) -> Unit
 ) {
     Column() {
         Column(
@@ -96,7 +95,7 @@ fun ChatView(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            MessagesBox(messageList, deleteMode = deleteMode, onClickDelete = onClickDelete)
+            MessagesBox(messageList, deleteMode = deleteMode, onClickDelete = onClickDelete, onCopyMessageToClipboard = onCopyMessageToClipboard)
         }
         MessageBar(
             bluetoothService,
@@ -108,7 +107,12 @@ fun ChatView(
 }
 
 @Composable
-fun MessagesBox(messageList: List<Message>, deleteMode: Boolean, onClickDelete: (Message) -> Unit) {
+fun MessagesBox(
+    messageList: List<Message>,
+    deleteMode: Boolean,
+    onClickDelete: (Message) -> Unit,
+    onCopyMessageToClipboard: (String) -> Unit
+) {
     val lazyColumnListState = rememberLazyListState()
 
     LazyColumn(
@@ -117,19 +121,28 @@ fun MessagesBox(messageList: List<Message>, deleteMode: Boolean, onClickDelete: 
     ) {
         messageList.forEach { message ->
             item {
-                if (message.received) {
+                if (message.received && !message.error) {
                     ChatReceived(
                         text = message.message,
                         timestamp = message.timestamp,
                         deleteMode = deleteMode,
-                        onClickDelete = { onClickDelete(message) }
+                        onClickDelete = { onClickDelete(message) },
+                        onCopyMessageToClipboard = { onCopyMessageToClipboard(it) }
                     )
-                } else {
+                } else if (!message.received && !message.error) {
                     ChatSend(
                         text = message.message,
                         timestamp = message.timestamp,
                         deleteMode = deleteMode,
-                        onClickDelete = { onClickDelete(message) }
+                        onClickDelete = { onClickDelete(message) },
+                        onCopyMessageToClipboard = { onCopyMessageToClipboard(it) }
+                    )
+                } else {
+                    ChatError(
+                        timestamp = message.timestamp,
+                        deleteMode = deleteMode,
+                        onClickDelete = { onClickDelete(message) },
+                        onCopyMessageToClipboard = { onCopyMessageToClipboard(it) }
                     )
                 }
             }

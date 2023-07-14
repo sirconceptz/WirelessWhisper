@@ -14,5 +14,6 @@ data class MessageEntity(
     val message: String = "",
     val timestamp: Long = 0L,
     val received: Boolean = false,
-    val readOut: Boolean = false
+    val readOut: Boolean = false,
+    val error: Boolean = false
 )

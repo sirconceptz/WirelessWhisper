@@ -2,6 +2,7 @@ package com.hermanowicz.wirelesswhisper.components.chatBubble
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -39,6 +41,7 @@ fun ChatSend(
     text: String,
     timestamp: Long,
     deleteMode: Boolean,
+    onCopyMessageToClipboard: (String) -> Unit,
     onClickDelete: () -> Unit
 ) {
     Row(
@@ -48,7 +51,14 @@ fun ChatSend(
                 start = LocalSpacing.current.small,
                 top = LocalSpacing.current.tiny,
                 bottom = LocalSpacing.current.tiny
-            ),
+            )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onCopyMessageToClipboard(text)
+                    }
+                )
+            },
         horizontalArrangement = Arrangement.End
     ) {
         Column() {

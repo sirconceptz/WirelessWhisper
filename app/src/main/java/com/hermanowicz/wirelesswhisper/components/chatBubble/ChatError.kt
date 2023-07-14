@@ -1,6 +1,8 @@
 package com.hermanowicz.wirelesswhisper.components.chatBubble
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -20,30 +22,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
-import com.hermanowicz.wirelesswhisper.ui.theme.Purple20
 import com.hermanowicz.wirelesswhisper.utils.DateFormatter
 
 @Composable
-fun ChatReceived(
-    text: String,
+fun ChatError(
     timestamp: Long,
     deleteMode: Boolean,
     onCopyMessageToClipboard: (String) -> Unit,
     onClickDelete: () -> Unit
 ) {
+    val text = stringResource(id = R.string.received_message_is_encrypted_impossible_to_read)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -82,7 +79,7 @@ fun ChatReceived(
                 Column(
                     modifier = Modifier
                         .background(
-                            color = Purple20,
+                            color = Color.Black,
                             shape = TriangleLeftEdgeShape(10)
                         )
                         .width(8.dp)
@@ -91,9 +88,10 @@ fun ChatReceived(
                 Column(
                     modifier = Modifier
                         .background(
-                            color = Purple20,
+                            color = Color.White,
                             shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp)
                         )
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp))
                         .padding(
                             vertical = LocalSpacing.current.tiny,
                             horizontal = LocalSpacing.current.small
@@ -114,21 +112,5 @@ fun ChatReceived(
                 textAlign = TextAlign.Start
             )
         }
-    }
-}
-
-class TriangleLeftEdgeShape(private val offset: Int) : Shape {
-
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val trianglePath = Path().apply {
-            moveTo(x = size.width + 1, y = size.height - offset)
-            lineTo(x = size.width + 1, y = size.height)
-            lineTo(x = size.width + 1 - offset, y = size.height)
-        }
-        return Outline.Generic(path = trianglePath)
     }
 }

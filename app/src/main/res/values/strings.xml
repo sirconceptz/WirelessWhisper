@@ -23,11 +23,21 @@
     <string name="new_message">New message</string>
     <string name="choose">Choose</string>
     <string name="do_you_want_to_pair_this_device">Do you want to pair this device?</string>
-    <string name="error_bluetooth_is_not_active">Bluetooth is not active</string>
     <string name="no_found_devices">No found devices</string>
     <string name="confirm">Confirm</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="you_received_new_message">You received a new message</string>
     <string name="connected_to">Connected to</string>
+    <string name="error_bluetooth_is_not_active">Bluetooth is not active</string>
+    <string name="error_sockets_accept_method_failed" translatable="false">Socket\'s accept() method failed</string>
+    <string name="error_bluetooth_server_closed" translatable="false">Bluetooth server closed</string>
+    <string name="error_could_not_close_the_connect_socket" translatable="false">Could not close the connect socket</string>
+    <string name="error_couldnt_send_data_to_the_other_device" translatable="false">Couldn\'t send data to the other device</string>
+    <string name="error_error_occured_when_sending_data" translatable="false">Error occurred when sending data</string>
+    <string name="start_bluetooth_server" translatable="false">Start Bluetooth server</string>
+    <string name="connection_bluetooth_started_to" translatable="false">Connection bluetooth started to</string>
+    <string name="bluetooth_service_activated" translatable="false">Bluetooth service activated</string>
+    <string name="received_message_is_encrypted_impossible_to_read">Received message is encrypted with unknown key. Please ask a sender to send a new message.</string>
+    <string name="message_copied_to_clipboard">Message copied to clipboard</string>
 </resources>
