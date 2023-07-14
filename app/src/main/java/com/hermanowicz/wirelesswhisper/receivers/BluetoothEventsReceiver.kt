@@ -18,7 +18,7 @@ class BluetoothEventsReceiver : BroadcastReceiver() {
                 Timber.d("Bluetooth: Device disconnected - ACL DISCONNECTED")
                 val bluetoothService = Intent(context, MyBluetoothService::class.java)
                 bluetoothService.action = MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS
-                context.startService(bluetoothService)
+                context.startForegroundService(bluetoothService)
             }
         }
     }

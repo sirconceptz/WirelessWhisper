@@ -44,7 +44,7 @@ class DecryptMessageUseCase @Inject constructor(
                 message = String(plainText, StandardCharsets.UTF_8),
                 timestamp = encryptedMessage.timestamp,
                 senderAddress = encryptedMessage.senderAddress,
-                receiverAddress = getDeviceAddressUseCase(),
+                receiverAddress = getDeviceAddressUseCase() ?: "",
                 readOut = false,
                 received = true
             )

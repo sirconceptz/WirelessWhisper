@@ -194,7 +194,7 @@ private fun sendMessage(
 ) {
     bluetoothService.putExtra(MyBluetoothService.ACTION_SEND_MESSAGE, message)
     bluetoothService.action = MyBluetoothService.ACTION_SEND_MESSAGE
-    context.startService(bluetoothService)
+    context.startForegroundService(bluetoothService)
     clearTextField()
 }
 

@@ -21,7 +21,8 @@ class GetAllChatsUseCase @Inject constructor(
         val addressList: MutableList<String> = mutableListOf()
         allMessages.forEach { message ->
             val address =
-                if (message.senderAddress == currentDeviceAddress) message.receiverAddress else message.senderAddress
+                if (message.senderAddress == currentDeviceAddress)
+                    message.receiverAddress else message.senderAddress
             var device: Device? = null
             allDevices.forEach { mDevice ->
                 if (mDevice.macAddress == address) {
@@ -48,7 +49,7 @@ class GetAllChatsUseCase @Inject constructor(
                     }
                 }
             } else {
-                if (!addressList.contains(address)) {
+                if (!addressList.contains(address) && currentDeviceAddress?.isNotEmpty() == true) {
                     allChats.add(
                         Chat(
                             deviceName = context.getString(R.string.unnamed),

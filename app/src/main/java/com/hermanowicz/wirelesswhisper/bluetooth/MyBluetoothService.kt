@@ -181,7 +181,7 @@ class MyBluetoothService() : Service() {
                 id = null,
                 message = content,
                 timestamp = System.currentTimeMillis(),
-                senderAddress = getDeviceAddressUseCase()
+                senderAddress = getDeviceAddressUseCase() ?: ""
             )
             val encryptionKey = device.await().encryptionKey
             if (encryptionKey.isNotEmpty()) {
@@ -191,7 +191,7 @@ class MyBluetoothService() : Service() {
                 scope.launch {
                     val message = Message(
                         id = null,
-                        senderAddress = getDeviceAddressUseCase(),
+                        senderAddress = getDeviceAddressUseCase() ?: "",
                         receiverAddress = mmSocket.remoteDevice.address,
                         timestamp = System.currentTimeMillis(),
                         readOut = true,

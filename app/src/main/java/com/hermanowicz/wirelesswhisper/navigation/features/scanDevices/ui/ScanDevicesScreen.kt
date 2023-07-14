@@ -144,5 +144,5 @@ private fun connectDevice(
         state.deviceDuringPairing!!.macAddress
     )
     bluetoothService.action = MyBluetoothService.ACTION_CONNECT
-    context.startService(bluetoothService)
+    context.startForegroundService(bluetoothService)
 }

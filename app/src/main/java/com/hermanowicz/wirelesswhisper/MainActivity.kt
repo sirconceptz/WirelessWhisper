@@ -25,9 +25,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setServiceAction(action: String) {
-        bluetoothServiceIntent = Intent(this, MyBluetoothService::class.java)
+        bluetoothServiceIntent = Intent(applicationContext, MyBluetoothService::class.java)
         bluetoothServiceIntent.action = action
-        startService(bluetoothServiceIntent)
+        startForegroundService(bluetoothServiceIntent)
     }
 
     override fun onDestroy() {

@@ -104,7 +104,7 @@ fun connectDevice(device: Device?, bluetoothService: Intent, context: Context) {
             device.macAddress
         )
         bluetoothService.action = MyBluetoothService.ACTION_CONNECT
-        context.startService(bluetoothService)
+        context.startForegroundService(bluetoothService)
     }
 }
 
@@ -112,6 +112,6 @@ fun disconnectDevice(device: Device?, bluetoothService: Intent, context: Context
     if (device != null) {
         bluetoothService.action = MyBluetoothService.ACTION_DISCONNECT
         bluetoothService.putExtra(MyBluetoothService.ACTION_DISCONNECT, device.macAddress)
-        context.startService(bluetoothService)
+        context.startForegroundService(bluetoothService)
     }
 }
