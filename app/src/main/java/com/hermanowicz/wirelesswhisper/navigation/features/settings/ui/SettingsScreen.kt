@@ -18,6 +18,7 @@ import androidx.lifecycle.Lifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardWhiteBgWithBorder
+import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.lifecycle.OnLifecycleEvent
 import com.hermanowicz.wirelesswhisper.components.switches.SwitchPrimary
 import com.hermanowicz.wirelesswhisper.components.text.TextLabel
@@ -47,7 +48,7 @@ fun SettingsScreen(
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                viewModel.updateAppSettings()
+                viewModel.observeAppSettings()
             }
 
             Lifecycle.Event.ON_START -> {
@@ -73,6 +74,12 @@ fun SettingsScreen(
                     SwitchPrimary(
                         label = stringResource(id = R.string.bluetooth),
                         state = uiState.bluetoothEnabled,
+                        onStateChange = { viewModel.openDeviceSettings(true) }
+                    )
+                    DividerCardInside()
+                    SwitchPrimary(
+                        label = stringResource(id = R.string.notifications),
+                        state = uiState.notificationsEnabled,
                         onStateChange = { viewModel.openDeviceSettings(true) }
                     )
                 }

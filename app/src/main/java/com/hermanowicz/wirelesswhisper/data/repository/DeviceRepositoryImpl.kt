@@ -5,7 +5,9 @@ import com.hermanowicz.wirelesswhisper.di.dataSource.DeviceLocalDataSource
 import com.hermanowicz.wirelesswhisper.di.repository.DeviceRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class DeviceRepositoryImpl @Inject constructor(
     private val localDataSource: DeviceLocalDataSource
 ) : DeviceRepository {

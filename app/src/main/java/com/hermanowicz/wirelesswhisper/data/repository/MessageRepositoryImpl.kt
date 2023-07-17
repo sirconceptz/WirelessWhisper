@@ -5,7 +5,9 @@ import com.hermanowicz.wirelesswhisper.di.dataSource.MessageLocalDataSource
 import com.hermanowicz.wirelesswhisper.di.repository.MessageRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class MessageRepositoryImpl @Inject constructor(
     private val messageLocalDataSource: MessageLocalDataSource
 ) : MessageRepository {
