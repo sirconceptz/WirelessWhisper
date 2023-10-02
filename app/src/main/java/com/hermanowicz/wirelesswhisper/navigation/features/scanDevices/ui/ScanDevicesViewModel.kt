@@ -25,14 +25,17 @@ class ScanDevicesViewModel @Inject constructor(
         startScanningDevicesUseCase()
     }
 
-    fun showDialogOnPairDevice(show: Boolean, device: Device? = null) {
+    fun showDialogOnPairDeviceConfirmation(show: Boolean, device: Device? = null) {
         _state.update {
-            it.copy(showDialogOnPairDevice = show, deviceDuringPairing = device)
+            if(device != null)
+                it.copy(showDialogOnPairDeviceConfirmation = show, deviceDuringPairing = device)
+            else
+                it.copy(showDialogOnPairDeviceConfirmation = show)
         }
     }
 
     fun onClickFoundDevice(device: Device) {
-        showDialogOnPairDevice(show = true, device = device)
+        showDialogOnPairDeviceConfirmation(show = true, device = device)
     }
 
     fun setFoundDevice(foundDevice: BluetoothDevice) {
@@ -52,6 +55,30 @@ class ScanDevicesViewModel @Inject constructor(
     fun turnOnDiscoverable(bool: Boolean) {
         _state.update {
             it.copy(turnOnDiscoverableMode = bool)
+        }
+    }
+
+    fun onGoToPermissionSettings(bool: Boolean) {
+        _state.update {
+            it.copy(goToPermissionSettings = bool)
+        }
+    }
+
+    fun showDialogPermissionsScanDevices(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsScanDevices = bool)
+        }
+    }
+
+    fun showDialogPermissionsOnDiscoverable(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsOnDiscoverable = bool)
+        }
+    }
+
+    fun showDialogPermissionsOnPair(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsOnPair = bool)
         }
     }
 }

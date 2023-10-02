@@ -1,10 +1,9 @@
-package com.hermanowicz.wirelesswhisper.receivers
+package com.hermanowicz.wirelesswhisper.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.hermanowicz.wirelesswhisper.bluetooth.MyBluetoothService
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -16,9 +15,7 @@ class BluetoothEventsReceiver : BroadcastReceiver() {
         if (action != null) {
             if (action == BluetoothDevice.ACTION_ACL_DISCONNECTED) {
                 Timber.d("Bluetooth: Device disconnected - ACL DISCONNECTED")
-                val bluetoothService = Intent(context, MyBluetoothService::class.java)
-                bluetoothService.action = MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS
-                context.startForegroundService(bluetoothService)
+                BluetoothAction.goToAction(context, MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS)
             }
         }
     }

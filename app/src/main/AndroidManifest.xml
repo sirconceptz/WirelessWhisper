@@ -42,7 +42,7 @@
         </activity>
 
         <receiver
-            android:name=".receivers.BluetoothEventsReceiver"
+            android:name=".bluetooth.BluetoothEventsReceiver"
             android:label="@string/app_name"
             android:exported="true">
             <intent-filter>
@@ -52,7 +52,8 @@
 
         <service
             android:name=".bluetooth.MyBluetoothService"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            android:stopWithTask="true" />
 
     </application>
 </manifest>

@@ -27,7 +27,7 @@ fun PairedDevicesScreen(
     bottomBar: @Composable () -> Unit,
     viewModel: PairedDevicesViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
 
     TopBarScaffold(
         topBarText = stringResource(id = R.string.paired_devices),

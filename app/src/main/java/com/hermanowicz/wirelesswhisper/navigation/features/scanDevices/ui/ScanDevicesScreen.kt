@@ -28,9 +28,12 @@ import com.hermanowicz.wirelesswhisper.components.button.ButtonPrimary
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
 import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
+import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.domain.GoToPermissionSettingsUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.state.ScanDevicesState
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
+import com.hermanowicz.wirelesswhisper.utils.Permissions
 import timber.log.Timber
 
 @Composable
@@ -41,6 +44,28 @@ fun ScanDevicesScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
+
+    val launcherPermissionsScanDevices = permissionChecker(
+        onGranted = { viewModel.scanDevices() },
+        showDialogPermissionNeeded = { viewModel.showDialogPermissionsScanDevices(true) }
+    )
+
+    val launcherPermissionsOnDiscoverableMode = permissionChecker(
+        onGranted = { viewModel.turnOnDiscoverable(true) },
+        showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnDiscoverable(true) }
+    )
+
+    val launcherPermissionsOnPair = permissionChecker(
+        onGranted = { connectDevice(bluetoothService, state, context) },
+        showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnPair(true) }
+    )
+
+    LaunchedEffect(key1 = state.goToPermissionSettings) {
+        if (state.goToPermissionSettings) {
+            GoToPermissionSettingsUseCase.invoke(context)
+            viewModel.onGoToPermissionSettings(false)
+        }
+    }
 
     LaunchedEffect(key1 = state.turnOnDiscoverableMode) {
         if (state.turnOnDiscoverableMode) {
@@ -61,18 +86,61 @@ fun ScanDevicesScreen(
         }
     }
 
-    if (state.showDialogOnPairDevice) {
+    if (state.showDialogPermissionsScanDevices) {
         DialogPrimary(
             onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
-                connectDevice(bluetoothService, state, context)
-                viewModel.showDialogOnPairDevice(false)
+                viewModel.onGoToPermissionSettings(true)
+                viewModel.showDialogPermissionsScanDevices(false)
             },
-            onDismissRequest = { viewModel.showDialogOnPairDevice(false) }
+            onDismissRequest = { viewModel.showDialogPermissionsScanDevices(false) }
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
+                Text(text = stringResource(id = R.string.permission_is_needed_to_perform_the_action))
             }
+        }
+    }
+
+    if (state.showDialogPermissionsOnDiscoverable) {
+        DialogPrimary(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
+            onPositiveRequest = {
+                viewModel.onGoToPermissionSettings(true)
+                viewModel.showDialogPermissionsOnDiscoverable(false)
+            },
+            onDismissRequest = { viewModel.showDialogPermissionsOnDiscoverable(false) }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(id = R.string.permission_is_needed_to_perform_the_action))
+            }
+        }
+    }
+
+    if (state.showDialogPermissionsOnPair) {
+        DialogPrimary(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
+            onPositiveRequest = {
+                viewModel.onGoToPermissionSettings(true)
+                viewModel.showDialogPermissionsOnPair(false)
+            },
+            onDismissRequest = { viewModel.showDialogPermissionsOnPair(false) }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(id = R.string.permission_is_needed_to_perform_the_action))
+            }
+        }
+    }
+
+    if (state.showDialogOnPairDeviceConfirmation) {
+        DialogPrimary(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
+            onPositiveRequest = {
+                launcherPermissionsOnPair.launch(Permissions.btPermissions.toTypedArray())
+                viewModel.showDialogOnPairDeviceConfirmation(false)
+            },
+            onDismissRequest = { viewModel.showDialogOnPairDeviceConfirmation(false) }
+        ) {
+            Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
         }
     }
 
@@ -81,7 +149,7 @@ fun ScanDevicesScreen(
         actions = {
             Text(
                 modifier = Modifier.clickable {
-                    viewModel.scanDevices()
+                    launcherPermissionsScanDevices.launch(Permissions.btPermissions.toTypedArray())
                 },
                 text = stringResource(id = R.string.scan),
                 color = Color.White
@@ -120,7 +188,7 @@ fun ScanDevicesScreen(
             item {
                 DividerCardInside()
                 ButtonPrimary(text = stringResource(id = R.string.turn_on_discoverable)) {
-                    viewModel.turnOnDiscoverable(true)
+                    launcherPermissionsOnDiscoverableMode.launch(Permissions.btPermissions.toTypedArray())
                 }
             }
         }

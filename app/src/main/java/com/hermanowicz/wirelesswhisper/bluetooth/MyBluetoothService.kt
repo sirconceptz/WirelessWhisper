@@ -42,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,15 +53,10 @@ import java.io.OutputStream
 import java.util.UUID
 import javax.inject.Inject
 
-private const val TAG = "MY_BLUETOOTH_MANAGER"
-private const val TOAST = "toast"
 
-// Defines several constants used when transmitting messages between the
-// service and the UI.
+private const val TAG = "MY_BLUETOOTH_MANAGER"
+
 const val MESSAGE_READ: Int = 0
-const val MESSAGE_WRITE: Int = 1
-const val MESSAGE_TOAST: Int = 2
-// ... (Add other message types here as needed.)
 
 @AndroidEntryPoint
 class MyBluetoothService() : Service() {
@@ -73,6 +69,7 @@ class MyBluetoothService() : Service() {
     private var serverThread: ServerThread? = null
     private var connectedThread: ConnectedThread? = null
     private var currentMacAddress: String? = null
+    private var appVisibilityStatus = false
 
     @Inject
     lateinit var saveMessageLocallyUseCase: SaveMessageLocallyUseCase
@@ -205,11 +202,12 @@ class MyBluetoothService() : Service() {
             }
         }
 
-        fun isConnected() : String? {
-            return if(mmSocket.isConnected)
+        fun isConnected(): String? {
+            return if (mmSocket.isConnected) {
                 mmSocket.remoteDevice.address
-            else
+            } else {
                 null
+            }
         }
 
         suspend fun sendToDevice(key: ByteArray) {
@@ -255,12 +253,14 @@ class MyBluetoothService() : Service() {
 
     @SuppressLint("MissingPermission")
     private fun showNotification() {
-        with(NotificationManagerCompat.from(context)) {
-            notify(
-                42,
-                NotificationBuilder.buildNotification(context)
-                    .build()
-            )
+        if (!appVisibilityStatus) {
+            with(NotificationManagerCompat.from(context)) {
+                notify(
+                    42,
+                    NotificationBuilder.buildNotification(context)
+                        .build()
+                )
+            }
         }
     }
 
@@ -289,7 +289,19 @@ class MyBluetoothService() : Service() {
                 try {
                     socket.connect()
                 } catch (e: SecurityException) {
-                    Timber.e(e.message) // todo: handle exception
+                    Timber.e(e.message)
+                    return
+                }
+                catch (e: Exception) {
+                    Timber.e(e.message)
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.connection_with_device_is_impossible),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    return
                 }
 
                 // The connection attempt succeeded. Perform work associated with
@@ -318,9 +330,9 @@ class MyBluetoothService() : Service() {
                 Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
         ) {
             Device(
                 macAddress = socket.remoteDevice.address,
@@ -405,6 +417,7 @@ class MyBluetoothService() : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        startForeground()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -412,6 +425,7 @@ class MyBluetoothService() : Service() {
         if (intent != null) {
             when (intent.action) {
                 ACTION_START -> initService()
+                ACTION_STOP -> onDestroy()
                 ACTION_CONNECT -> {
                     val macAddress = intent.getStringExtra(ACTION_CONNECT)
                     if (macAddress != null) {
@@ -432,6 +446,8 @@ class MyBluetoothService() : Service() {
 
                 ACTION_UPDATE_DEVICE_CONNECTION_STATUS -> updateDeviceConnectionStatus()
                 ACTION_DISCONNECT_ALL_DEVICES -> disconnectAllDevices()
+                ACTION_APP_VISIBLE -> appVisibilityStatus = true
+                ACTION_APP_INVISIBLE -> appVisibilityStatus = false
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -481,17 +497,21 @@ class MyBluetoothService() : Service() {
             } catch (_: IOException) {
             }
         }
-        if(address != null) {
-            scope.launch {
-                updateDeviceConnectionStatusUseCase(address, false)
-            }
+        if (address != null) {
+            setDeviceConnectionStatus(address, false)
         } else if (currentMacAddress != null) {
             scope.launch {
-                updateDeviceConnectionStatusUseCase(currentMacAddress!!, false)
+                setDeviceConnectionStatus(currentMacAddress!!, false)
+                currentMacAddress = null
+                startServer()
             }
         }
-        currentMacAddress = null
-        startServer()
+    }
+
+    private fun setDeviceConnectionStatus(address: String, status: Boolean) {
+        scope.launch {
+            updateDeviceConnectionStatusUseCase(address, status)
+        }
     }
 
     private fun sendMessage(content: String) {
@@ -524,7 +544,7 @@ class MyBluetoothService() : Service() {
                         exchangeNewEncryptionKey(device.macAddress)
                     }
                 } else {
-                    updateDeviceConnectionStatusUseCase(device.macAddress, true)
+                    setDeviceConnectionStatus(device.macAddress, true)
                 }
             }
         }
@@ -532,11 +552,14 @@ class MyBluetoothService() : Service() {
 
     companion object {
         const val ACTION_START = "ACTION_START"
+        const val ACTION_STOP = "ACTION_STOP"
         const val ACTION_CONNECT = "ACTION_CONNECT"
         const val ACTION_DISCONNECT = "ACTION_DISCONNECT"
         const val ACTION_UPDATE_DEVICE_CONNECTION_STATUS = "ACTION_UPDATE_DEVICE_CONNECTION_STATUS"
         const val ACTION_SEND_MESSAGE = "ACTION_SEND_MESSAGE"
         const val ACTION_DISCONNECT_ALL_DEVICES = "ACTION_DISCONNECT_ALL_DEVICES"
+        const val ACTION_APP_VISIBLE = "ACTION_APP_VISIBLE"
+        const val ACTION_APP_INVISIBLE = "ACTION_APP_INVISIBLE"
     }
 
     private fun startForeground() {
@@ -549,5 +572,12 @@ class MyBluetoothService() : Service() {
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
         startForeground(101, notification)
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        stopForeground(STOP_FOREGROUND_DETACH)
+        stopSelf()
+        super.onDestroy()
     }
 }

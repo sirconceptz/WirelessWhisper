@@ -1,6 +1,5 @@
 package com.hermanowicz.wirelesswhisper.di.repository
 
-
 import com.hermanowicz.wirelesswhisper.data.model.AppSettings
 import com.hermanowicz.wirelesswhisper.data.repository.SettingsRepositoryImpl
 import dagger.Binds

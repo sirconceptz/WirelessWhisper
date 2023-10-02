@@ -33,4 +33,6 @@
     <string name="error_bluetooth_is_not_active">Bluetooth jest nieaktywny</string>
    <string name="received_message_is_encrypted_impossible_to_read">Otrzymana wiadomość jest zaszyfrowana nieznanym kluczem. Poproś nadawcę o wysłanie wiadomości ponownie.</string>
     <string name="message_copied_to_clipboard">Wiadomość skopiowana do schowka</string>
+    <string name="permission_is_needed_to_perform_the_action">Pozwolenia są potrzebne do wykonania zadania.</string>
+    <string name="connection_with_device_is_impossible">Połączenie z urządzeniem jest aktualnie niemożliwe</string>
 </resources>

@@ -27,9 +27,9 @@ class AllChatsViewModel @Inject constructor(
     private val observeMessagesForAddressUseCase: ObserveMessagesForAddressUseCase,
     private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<AllChatsUiState> = MutableStateFlow(AllChatsUiState())
+    private val _state: MutableStateFlow<AllChatsUiState> = MutableStateFlow(AllChatsUiState())
 
-    val uiState: StateFlow<AllChatsUiState> = _uiState.asStateFlow()
+    val state: StateFlow<AllChatsUiState> = _state.asStateFlow()
 
     init {
         observeAllChats()
@@ -40,7 +40,7 @@ class AllChatsViewModel @Inject constructor(
             observeAllMessagesUseCase().combine(observeAllPairedDevicesUseCase()) { allMessages, pairedDevices ->
                 val connectedDevices = pairedDevices.filter { it.connected }
                 if (connectedDevices.isNotEmpty()) {
-                    _uiState.update {
+                    _state.update {
                         it.copy(
                             pairedDevices = pairedDevices,
                             connectedDevices = connectedDevices,
@@ -50,21 +50,21 @@ class AllChatsViewModel @Inject constructor(
                 }
                 getAllChatsUseCase(allMessages, pairedDevices)
             }.collect { chatList ->
-                _uiState.update { it.copy(chatList = chatList) }
+                _state.update { it.copy(chatList = chatList) }
             }
         }
     }
 
     fun showDialogNewMessage(show: Boolean) {
-        _uiState.update { it.copy(showDialogNewMessage = show) }
+        _state.update { it.copy(showDialogNewMessage = show) }
     }
 
     fun showNewMessageDropdown(show: Boolean) {
-        _uiState.update { it.copy(showDropdownNewMessage = show) }
+        _state.update { it.copy(showDropdownNewMessage = show) }
     }
 
     fun onSelectNewMessageDevice(device: Device?) {
-        _uiState.update { it.copy(newMessageDevice = device) }
+        _state.update { it.copy(newMessageDevice = device) }
     }
 
     fun deleteSingleChat(address: String) {

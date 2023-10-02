@@ -1,6 +1,5 @@
 package com.hermanowicz.wirelesswhisper.navigation
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.SnackbarDefaults
 import androidx.compose.material.contentColorFor
@@ -29,7 +28,6 @@ import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ScanDevic
 import com.hermanowicz.wirelesswhisper.navigation.features.settings.SettingsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.SingleChatRoute
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()

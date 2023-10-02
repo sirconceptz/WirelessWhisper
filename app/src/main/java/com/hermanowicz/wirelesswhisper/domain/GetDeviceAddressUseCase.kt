@@ -6,8 +6,6 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import com.hermanowicz.wirelesswhisper.R
-import com.hermanowicz.wirelesswhisper.data.model.Device
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -24,9 +22,9 @@ class GetDeviceAddressUseCase @Inject constructor(
                 Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
         ) {
             btAdapter.address
         } else {

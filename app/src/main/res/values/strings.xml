@@ -41,4 +41,6 @@
     <string name="bluetooth_service_activated" translatable="false">Bluetooth service activated</string>
     <string name="received_message_is_encrypted_impossible_to_read">Received message is encrypted with unknown key. Please ask a sender to send a new message.</string>
     <string name="message_copied_to_clipboard">Message copied to clipboard</string>
+    <string name="permission_is_needed_to_perform_the_action">Permission is needed to perform the action</string>
+    <string name="connection_with_device_is_impossible">Connection with device is currently impossible</string>
 </resources>

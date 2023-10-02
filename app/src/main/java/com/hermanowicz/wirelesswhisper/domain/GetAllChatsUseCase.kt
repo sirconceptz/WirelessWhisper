@@ -21,8 +21,11 @@ class GetAllChatsUseCase @Inject constructor(
         val addressList: MutableList<String> = mutableListOf()
         allMessages.forEach { message ->
             val address =
-                if (message.senderAddress == currentDeviceAddress)
-                    message.receiverAddress else message.senderAddress
+                if (message.senderAddress == currentDeviceAddress) {
+                    message.receiverAddress
+                } else {
+                    message.senderAddress
+                }
             var device: Device? = null
             allDevices.forEach { mDevice ->
                 if (mDevice.macAddress == address) {

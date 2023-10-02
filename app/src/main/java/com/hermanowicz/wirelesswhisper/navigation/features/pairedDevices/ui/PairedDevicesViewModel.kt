@@ -18,8 +18,8 @@ class PairedDevicesViewModel @Inject constructor(
     private val observeAllPairedDevicesUseCase: ObserveAllPairedDevicesUseCase
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<PairedDevicesUiState> = MutableStateFlow(PairedDevicesUiState())
-    val uiState: StateFlow<PairedDevicesUiState> = _uiState.asStateFlow()
+    private val _state: MutableStateFlow<PairedDevicesUiState> = MutableStateFlow(PairedDevicesUiState())
+    val state: StateFlow<PairedDevicesUiState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -30,6 +30,6 @@ class PairedDevicesViewModel @Inject constructor(
     }
 
     private fun updateDeviceList(deviceList: List<Device>) {
-        _uiState.update { it.copy(deviceList = deviceList) }
+        _state.update { it.copy(deviceList = deviceList) }
     }
 }

@@ -31,9 +31,9 @@ class SingleChatViewModel @Inject constructor(
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
-    private var _uiState: MutableStateFlow<SingleChatUiState> =
+    private var _state: MutableStateFlow<SingleChatUiState> =
         MutableStateFlow(SingleChatUiState())
-    var uiState: StateFlow<SingleChatUiState> = _uiState.asStateFlow()
+    var state: StateFlow<SingleChatUiState> = _state.asStateFlow()
 
     init {
         observeMessagesForAddress(macAddress)
@@ -51,7 +51,7 @@ class SingleChatViewModel @Inject constructor(
     }
 
     private fun updateDeviceForAddress(device: Device) {
-        _uiState.update { it.copy(device = device) }
+        _state.update { it.copy(device = device) }
     }
 
     private fun observeMessagesForAddress(address: String) {
@@ -70,7 +70,7 @@ class SingleChatViewModel @Inject constructor(
     }
 
     private fun updateMessageList(messageList: List<Message>) {
-        _uiState.update { it.copy(messageList = messageList) }
+        _state.update { it.copy(messageList = messageList) }
     }
 
     fun clearCurrentMessage() {
@@ -78,7 +78,7 @@ class SingleChatViewModel @Inject constructor(
     }
 
     fun onCurrentMessageChange(currentMessage: String) {
-        _uiState.update { it.copy(currentMessage = currentMessage) }
+        _state.update { it.copy(currentMessage = currentMessage) }
     }
 
     fun deleteSingleMessage(messageId: Int) {
@@ -88,10 +88,22 @@ class SingleChatViewModel @Inject constructor(
     }
 
     fun onClickEditMode(editMode: Boolean) {
-        _uiState.update { it.copy(deleteMode = editMode) }
+        _state.update { it.copy(deleteMode = editMode) }
     }
 
     fun copyMessageToClipboard(message: String) {
         copyMessageToClipboardUseCase(message)
+    }
+
+    fun onGoToPermissionSettings(bool: Boolean) {
+        _state.update {
+            it.copy(goToPermissionSettings = bool)
+        }
+    }
+
+    fun showDialogPermissionsSendMessage(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsSendMessage = bool)
+        }
     }
 }

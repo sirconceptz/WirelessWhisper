@@ -9,7 +9,6 @@ import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.state.D
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,10 +20,10 @@ class DeviceDetailsViewModel @Inject constructor(
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
-    private val _uiState: MutableStateFlow<DeviceDetailsUiState> = MutableStateFlow(
+    private val _state: MutableStateFlow<DeviceDetailsUiState> = MutableStateFlow(
         DeviceDetailsUiState()
     )
-    val uiState: StateFlow<DeviceDetailsUiState> = _uiState
+    val state: StateFlow<DeviceDetailsUiState> = _state
 
     init {
         viewModelScope.launch {
@@ -35,6 +34,24 @@ class DeviceDetailsViewModel @Inject constructor(
     }
 
     private fun updateDeviceState(device: Device) {
-        _uiState.update { it.copy(device = device) }
+        _state.update { it.copy(device = device) }
+    }
+
+    fun onGoToPermissionSettings(bool: Boolean) {
+        _state.update {
+            it.copy(goToPermissionSettings = bool)
+        }
+    }
+
+    fun showDialogPermissionsConnectDevice(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsConnectDevice = bool)
+        }
+    }
+
+    fun showDialogPermissionsDisconnectDevice(bool: Boolean) {
+        _state.update {
+            it.copy(showDialogPermissionsDisconnectDevice = bool)
+        }
     }
 }

@@ -7,5 +7,7 @@ data class SingleChatUiState(
     var messageList: List<Message> = emptyList(),
     var device: Device = Device(),
     var currentMessage: String = "",
-    var deleteMode: Boolean = false
+    var deleteMode: Boolean = false,
+    var goToPermissionSettings: Boolean = false,
+    var showDialogPermissionsSendMessage: Boolean = false
 )

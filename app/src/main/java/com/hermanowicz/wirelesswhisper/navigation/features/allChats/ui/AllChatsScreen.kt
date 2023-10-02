@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogNewMessage
+import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
 import com.hermanowicz.wirelesswhisper.data.model.Chat
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
@@ -50,7 +51,7 @@ fun AllChatsScreen(
     bottomBar: @Composable () -> Unit,
     viewModel: AllChatsViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
 
     if (uiState.showDialogNewMessage) {
         DialogNewMessage(

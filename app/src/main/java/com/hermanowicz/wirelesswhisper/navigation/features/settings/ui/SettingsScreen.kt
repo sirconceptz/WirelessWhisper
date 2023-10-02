@@ -30,7 +30,7 @@ fun SettingsScreen(
     bottomBar: @Composable () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(key1 = uiState.openDeviceSettings) {
