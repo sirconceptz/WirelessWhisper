@@ -53,13 +53,12 @@ import java.io.OutputStream
 import java.util.UUID
 import javax.inject.Inject
 
-
 private const val TAG = "MY_BLUETOOTH_MANAGER"
 
 const val MESSAGE_READ: Int = 0
 
 @AndroidEntryPoint
-class MyBluetoothService() : Service() {
+class MyBluetoothService : Service() {
 
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val context: Context = this
@@ -68,7 +67,6 @@ class MyBluetoothService() : Service() {
     private var clientThread: ClientThread? = null
     private var serverThread: ServerThread? = null
     private var connectedThread: ConnectedThread? = null
-    private var currentMacAddress: String? = null
     private var appVisibilityStatus = false
 
     @Inject
@@ -101,8 +99,7 @@ class MyBluetoothService() : Service() {
     @Inject
     lateinit var generateEncryptionKeyUseCase: GenerateEncryptionKeyUseCase
 
-    private val job by lazy { SupervisorJob() }
-    private val scope by lazy { CoroutineScope(Dispatchers.IO + job) }
+    private val scope by lazy { CoroutineScope(Dispatchers.IO) }
 
     inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
 
@@ -120,7 +117,6 @@ class MyBluetoothService() : Service() {
                     mmInStream.read(mmBuffer)
                 } catch (e: IOException) {
                     Timber.d(TAG, "Input stream was disconnected", e)
-                    disconnectDevice()
                     break
                 }
 
@@ -184,18 +180,25 @@ class MyBluetoothService() : Service() {
             if (encryptionKey.isNotEmpty()) {
                 val encryptedMessage =
                     encryptMessageUseCase(decryptedMessage, encryptionKey)
-                sendToDevice(encryptedMessage.message.toByteArray())
-                scope.launch {
-                    val message = Message(
-                        id = null,
-                        senderAddress = getDeviceAddressUseCase() ?: "",
-                        receiverAddress = mmSocket.remoteDevice.address,
-                        timestamp = System.currentTimeMillis(),
-                        readOut = true,
-                        received = false,
-                        message = decryptedMessage.message
+                try {
+                    sendToDevice(
+                        encryptedMessage.message.toByteArray(),
+                        address = device.await().macAddress
                     )
-                    saveMessageLocallyUseCase(message)
+                    scope.launch {
+                        val message = Message(
+                            id = null,
+                            senderAddress = getDeviceAddressUseCase() ?: "",
+                            receiverAddress = mmSocket.remoteDevice.address,
+                            timestamp = System.currentTimeMillis(),
+                            readOut = true,
+                            received = false,
+                            message = decryptedMessage.message
+                        )
+                        saveMessageLocallyUseCase(message)
+                    }
+                } catch (e: IOException) {
+                    updateDeviceConnectionStatusUseCase(device.await().macAddress, false)
                 }
             } else {
                 exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
@@ -210,18 +213,20 @@ class MyBluetoothService() : Service() {
             }
         }
 
-        suspend fun sendToDevice(key: ByteArray) {
+        @Throws(IOException::class)
+        suspend fun sendToDevice(key: ByteArray, address: String) {
             try {
                 withContext(Dispatchers.IO) {
                     mmOutStream.write(key)
                 }
             } catch (e: IOException) {
                 Timber.e(TAG, context.getString(R.string.error_error_occured_when_sending_data), e)
-
+                updateDeviceConnectionStatusUseCase(address, false)
                 // Send a failure message back to the activity.
                 showToast(
                     context.getString(R.string.error_couldnt_send_data_to_the_other_device)
                 )
+                throw IOException("Couldn't send data to the other device")
             }
         }
 
@@ -244,7 +249,7 @@ class MyBluetoothService() : Service() {
         address: String
     ) {
         val generatedKey = generateEncryptionKeyUseCase()
-        connectedThread?.sendToDevice(generatedKey)
+        connectedThread?.sendToDevice(generatedKey, address)
         updateEncryptionKeyInDeviceUseCase(
             address,
             generatedKey
@@ -291,16 +296,9 @@ class MyBluetoothService() : Service() {
                 } catch (e: SecurityException) {
                     Timber.e(e.message)
                     return
-                }
-                catch (e: Exception) {
+                } catch (e: Exception) {
                     Timber.e(e.message)
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.connection_with_device_is_impossible),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    showToast(context.getString(R.string.connection_with_device_is_impossible))
                     return
                 }
 
@@ -330,9 +328,9 @@ class MyBluetoothService() : Service() {
                 Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) == PackageManager.PERMISSION_GRANTED
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             Device(
                 macAddress = socket.remoteDevice.address,
@@ -407,7 +405,6 @@ class MyBluetoothService() : Service() {
     private fun setConnectedThread(it: BluetoothSocket) {
         connectedThread = ConnectedThread(it)
         connectedThread!!.start()
-        currentMacAddress = it.remoteDevice.address
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -437,6 +434,7 @@ class MyBluetoothService() : Service() {
                     val address = intent.getStringExtra(ACTION_DISCONNECT)
                     disconnectDevice(address)
                 }
+
                 ACTION_SEND_MESSAGE -> {
                     val message = intent.getStringExtra(ACTION_SEND_MESSAGE)
                     if (message != null) {
@@ -489,23 +487,17 @@ class MyBluetoothService() : Service() {
         Timber.d(context.getString(R.string.connection_bluetooth_started_to) + " " + macAddress)
     }
 
-    private fun disconnectDevice(address: String? = null) {
+    private fun disconnectDevice(address: String?) {
         if (clientThread != null) {
             try {
                 clientThread?.cancel()
                 connectedThread?.cancel()
-            } catch (_: IOException) {
+            } catch (e: IOException) {
+                Timber.e(e)
             }
         }
-        if (address != null) {
+        if (address != null)
             setDeviceConnectionStatus(address, false)
-        } else if (currentMacAddress != null) {
-            scope.launch {
-                setDeviceConnectionStatus(currentMacAddress!!, false)
-                currentMacAddress = null
-                startServer()
-            }
-        }
     }
 
     private fun setDeviceConnectionStatus(address: String, status: Boolean) {
@@ -515,8 +507,8 @@ class MyBluetoothService() : Service() {
     }
 
     private fun sendMessage(content: String) {
-        if (connectedThread != null) {
-            scope.launch {
+        scope.launch {
+            if (connectedThread != null) {
                 connectedThread!!.write(content)
             }
         }

@@ -18,7 +18,8 @@ class PairedDevicesViewModel @Inject constructor(
     private val observeAllPairedDevicesUseCase: ObserveAllPairedDevicesUseCase
 ) : ViewModel() {
 
-    private val _state: MutableStateFlow<PairedDevicesUiState> = MutableStateFlow(PairedDevicesUiState())
+    private val _state: MutableStateFlow<PairedDevicesUiState> =
+        MutableStateFlow(PairedDevicesUiState())
     val state: StateFlow<PairedDevicesUiState> = _state.asStateFlow()
 
     init {

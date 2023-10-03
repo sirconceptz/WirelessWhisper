@@ -1,8 +1,8 @@
 package com.hermanowicz.wirelesswhisper.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.SnackbarDefaults
-import androidx.compose.material.contentColorFor
+import androidx.compose.material3.SnackbarDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -21,6 +21,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hermanowicz.wirelesswhisper.navigation.features.allChats.AllChatsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.DeviceDetailsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
@@ -59,7 +61,9 @@ fun AppNavHost() {
             }
             composable(route = AppScreens.AllChats.route) {
                 AllChatsRoute(
-                    onClickSingleChat = { navController.navigate("${AppScreens.SingleChat.route}/$it") },
+                    onClickSingleChat = { device ->
+                        if(device != null)
+                            navController.navigate("${AppScreens.SingleChat.route}/${device.macAddress}") },
                     bottomBar = { BottomNav(navController = navController) }
                 )
             }
@@ -88,7 +92,7 @@ fun BottomNav(navController: NavController) {
         AppScreens.Settings
     )
     NavigationBar(
-        contentColor = contentColorFor(SnackbarDefaults.backgroundColor),
+        contentColor = contentColorFor(SnackbarDefaults.contentColor),
         containerColor = Color.White
     ) {
         items.forEach { item ->

@@ -23,7 +23,10 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        BluetoothAction.goToAction(applicationContext, MyBluetoothService.ACTION_DISCONNECT_ALL_DEVICES)
+        BluetoothAction.goToAction(
+            applicationContext,
+            MyBluetoothService.ACTION_DISCONNECT_ALL_DEVICES
+        )
         super.onDestroy()
     }
 }

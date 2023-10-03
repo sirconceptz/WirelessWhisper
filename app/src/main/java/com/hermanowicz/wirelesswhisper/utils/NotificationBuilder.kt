@@ -23,7 +23,11 @@ object NotificationBuilder {
             .setBigContentTitle(title).bigText(description)
 
         val notificationChannel =
-            createNotificationChannel(context, NEW_MESSAGE_CHANNEL_ID, context.getString(R.string.new_message))
+            createNotificationChannel(
+                context,
+                NEW_MESSAGE_CHANNEL_ID,
+                context.getString(R.string.new_message)
+            )
 
         val notificationCompatBuilder =
             NotificationCompat.Builder(context, notificationChannel)

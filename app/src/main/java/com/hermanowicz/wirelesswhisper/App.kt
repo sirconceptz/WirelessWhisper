@@ -33,11 +33,19 @@ class App : Application(), Configuration.Provider, LifecycleEventObserver {
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             Lifecycle.Event.ON_START -> {
-                BluetoothAction.goToAction(applicationContext, MyBluetoothService.ACTION_APP_VISIBLE)
+                BluetoothAction.goToAction(
+                    applicationContext,
+                    MyBluetoothService.ACTION_APP_VISIBLE
+                )
             }
+
             Lifecycle.Event.ON_STOP -> {
-                BluetoothAction.goToAction(applicationContext, MyBluetoothService.ACTION_APP_INVISIBLE)
+                BluetoothAction.goToAction(
+                    applicationContext,
+                    MyBluetoothService.ACTION_APP_INVISIBLE
+                )
             }
+
             else -> {}
         }
     }

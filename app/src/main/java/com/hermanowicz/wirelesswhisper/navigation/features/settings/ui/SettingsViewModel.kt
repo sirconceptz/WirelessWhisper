@@ -35,10 +35,12 @@ class SettingsViewModel @Inject constructor(
         updateAppSettingsUseCase()
         viewModelScope.launch {
             observeAppSettingsUseCase().collect { appSettings ->
-                if(!state.value.bluetoothEnabled && appSettings.bluetoothEnabled)
+                if (!state.value.bluetoothEnabled && appSettings.bluetoothEnabled) {
                     startBTService()
-                if(state.value.bluetoothEnabled && !appSettings.bluetoothEnabled)
+                }
+                if (state.value.bluetoothEnabled && !appSettings.bluetoothEnabled) {
                     stopBTService()
+                }
                 updateAppSettings(appSettings)
             }
         }

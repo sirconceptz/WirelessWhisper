@@ -10,7 +10,8 @@ import com.hermanowicz.wirelesswhisper.data.model.MessageEntity
         DeviceEntity::class,
         MessageEntity::class
     ],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
 abstract class LocalDb : RoomDatabase() {
     abstract fun deviceDao(): DeviceDao

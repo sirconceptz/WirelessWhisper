@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,13 +33,13 @@ fun PairedDevicesScreen(
     TopBarScaffold(
         topBarText = stringResource(id = R.string.paired_devices),
         actions = {
-            Text(
-                modifier = Modifier.clickable {
+            Button(
+                onClick = {
                     navigateToToScanDevices()
-                },
-                text = stringResource(id = R.string.pair_new_device),
-                color = Color.White
-            )
+                })
+            {
+                Text(text = stringResource(id = R.string.pair_new_device))
+            }
         },
         bottomBar = bottomBar
     ) {

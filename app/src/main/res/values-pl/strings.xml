@@ -24,6 +24,7 @@
     <string name="new_message">Nowa wiadomość</string>
     <string name="choose">Wybierz</string>
     <string name="do_you_want_to_pair_this_device">Czy chcesz sparować się z tym urządzeniem?</string>
+    <string name="are_you_sure_you_want_to_delete_this_device">Czy jesteś pewny, że chcesz usunąć to urządzenie?</string>
     <string name="no_found_devices">Nie znaleziono urządzeń</string>
     <string name="confirm">Potwierdź</string>
     <string name="connect">Połącz</string>
@@ -31,8 +32,10 @@
     <string name="you_received_new_message">Otrzymałeś nową wiadomość</string>
     <string name="connected_to">Połączony z</string>
     <string name="error_bluetooth_is_not_active">Bluetooth jest nieaktywny</string>
-   <string name="received_message_is_encrypted_impossible_to_read">Otrzymana wiadomość jest zaszyfrowana nieznanym kluczem. Poproś nadawcę o wysłanie wiadomości ponownie.</string>
+    <string name="error_device_is_not_connected">Urządzenie nie jest podłączone. Połącz się przed rozpoczęciem rozmowy.</string>
+    <string name="received_message_is_encrypted_impossible_to_read">Otrzymana wiadomość jest zaszyfrowana nieznanym kluczem. Poproś nadawcę o wysłanie wiadomości ponownie.</string>
     <string name="message_copied_to_clipboard">Wiadomość skopiowana do schowka</string>
     <string name="permission_is_needed_to_perform_the_action">Pozwolenia są potrzebne do wykonania zadania.</string>
     <string name="connection_with_device_is_impossible">Połączenie z urządzeniem jest aktualnie niemożliwe</string>
+    <string name="delete_device">Usuń urządzenie</string>
 </resources>

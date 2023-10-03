@@ -2,6 +2,7 @@ package com.hermanowicz.wirelesswhisper.navigation.features.singleChat.ui
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,14 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TextField
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,11 +36,12 @@ import com.hermanowicz.wirelesswhisper.bluetooth.MyBluetoothService
 import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatError
 import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatReceived
 import com.hermanowicz.wirelesswhisper.components.chatBubble.ChatSend
-import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
+import com.hermanowicz.wirelesswhisper.components.dialog.DialogPermissions
 import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.domain.GoToPermissionSettingsUseCase
+import com.hermanowicz.wirelesswhisper.navigation.features.singleChat.state.SingleChatUiState
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 import com.hermanowicz.wirelesswhisper.utils.Permissions
 
@@ -55,30 +56,21 @@ fun SingleChatScreen(
 
     val launcherPermissionsConnectDevice = permissionChecker(
         onGranted = {
-            sendMessage(
-                context,
-                uiState.currentMessage,
-                bluetoothService,
-                clearTextField = { viewModel.clearCurrentMessage() }
-            )
+            if(viewModel.isDeviceConnected()) {
+                sendMessage(
+                    context,
+                    uiState.currentMessage,
+                    bluetoothService,
+                    clearTextField = { viewModel.clearCurrentMessage() }
+                )
+            }
+            else
+                showErrorDeviceNotConnected(context)
         },
         showDialogPermissionNeeded = { viewModel.showDialogPermissionsSendMessage(true) }
     )
 
-    if (uiState.showDialogPermissionsSendMessage) {
-        DialogPrimary(
-            onPositiveLabel = stringResource(id = android.R.string.ok),
-            onPositiveRequest = {
-                viewModel.onGoToPermissionSettings(true)
-                viewModel.showDialogPermissionsSendMessage(false)
-            },
-            onDismissRequest = { viewModel.showDialogPermissionsSendMessage(false) }
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = stringResource(id = R.string.permission_is_needed_to_perform_the_action))
-            }
-        }
-    }
+    Dialogs(uiState, viewModel)
 
     LaunchedEffect(key1 = uiState.goToPermissionSettings) {
         if (uiState.goToPermissionSettings) {
@@ -95,19 +87,19 @@ fun SingleChatScreen(
             )
         }
     }, actions = {
-        Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
-        )
-    }) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
+            )
+        }) {
         ChatView(
             messageList = uiState.messageList,
             currentMessage = uiState.currentMessage,
-            checkPermissions = { launcherPermissionsConnectDevice.launch(Permissions.btPermissions.toTypedArray()) },
+            checkPermissions = { launcherPermissionsConnectDevice.launch(Permissions.btPermissions) },
             onCurrentMessageChange = {
                 viewModel.onCurrentMessageChange(it)
             },
@@ -115,6 +107,27 @@ fun SingleChatScreen(
             setCurrentMessageInState = { viewModel.onCurrentMessageChange(it) },
             onClickDelete = { viewModel.deleteSingleMessage(it.id!!) },
             onCopyMessageToClipboard = { viewModel.copyMessageToClipboard(it) }
+        )
+    }
+}
+
+fun showErrorDeviceNotConnected(context: Context) {
+    Toast.makeText(context, context.getString(R.string.error_device_is_not_connected), Toast.LENGTH_LONG).show()
+}
+
+@Composable
+private fun Dialogs(
+    uiState: SingleChatUiState,
+    viewModel: SingleChatViewModel
+) {
+    if (uiState.showDialogPermissionsSendMessage) {
+        DialogPermissions(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
+            onPositiveRequest = {
+                viewModel.onGoToPermissionSettings(true)
+                viewModel.showDialogPermissionsSendMessage(false)
+            },
+            onDismissRequest = { viewModel.showDialogPermissionsSendMessage(false) }
         )
     }
 }
@@ -130,7 +143,7 @@ fun ChatView(
     onClickDelete: (Message) -> Unit,
     onCopyMessageToClipboard: (String) -> Unit
 ) {
-    Column() {
+    Column {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
@@ -91,7 +91,10 @@ fun ChatError(
                             color = Color.White,
                             shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp)
                         )
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp))
+                        .border(
+                            BorderStroke(1.dp, Color.Black),
+                            RoundedCornerShape(4.dp, 4.dp, 4.dp, 0.dp)
+                        )
                         .padding(
                             vertical = LocalSpacing.current.tiny,
                             horizontal = LocalSpacing.current.small

@@ -15,7 +15,10 @@ class BluetoothEventsReceiver : BroadcastReceiver() {
         if (action != null) {
             if (action == BluetoothDevice.ACTION_ACL_DISCONNECTED) {
                 Timber.d("Bluetooth: Device disconnected - ACL DISCONNECTED")
-                BluetoothAction.goToAction(context, MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS)
+                BluetoothAction.goToAction(
+                    context,
+                    MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS
+                )
             }
         }
     }

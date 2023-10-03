@@ -52,7 +52,7 @@ fun SettingsScreen(
             }
 
             Lifecycle.Event.ON_START -> {
-                systemUiController.isStatusBarVisible = false
+                systemUiController.isStatusBarVisible = true
             }
 
             else -> Unit

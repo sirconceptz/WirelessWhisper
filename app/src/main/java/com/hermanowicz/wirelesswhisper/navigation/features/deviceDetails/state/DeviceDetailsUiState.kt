@@ -6,5 +6,6 @@ data class DeviceDetailsUiState(
     var device: Device? = null,
     var goToPermissionSettings: Boolean = false,
     var showDialogPermissionsConnectDevice: Boolean = false,
-    var showDialogPermissionsDisconnectDevice: Boolean = false
+    var showDialogPermissionsDisconnectDevice: Boolean = false,
+    var showDeleteDeviceDialog: Boolean = false
 )

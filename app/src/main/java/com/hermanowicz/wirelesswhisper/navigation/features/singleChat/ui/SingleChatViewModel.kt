@@ -106,4 +106,8 @@ class SingleChatViewModel @Inject constructor(
             it.copy(showDialogPermissionsSendMessage = bool)
         }
     }
+
+    fun isDeviceConnected(): Boolean {
+        return state.value.device.connected
+    }
 }

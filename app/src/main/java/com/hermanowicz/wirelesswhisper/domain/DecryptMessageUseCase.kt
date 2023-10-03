@@ -4,7 +4,6 @@ import com.hermanowicz.wirelesswhisper.data.model.EncryptedMessage
 import com.hermanowicz.wirelesswhisper.data.model.Message
 import com.hermanowicz.wirelesswhisper.utils.AESFromPassword
 import com.hermanowicz.wirelesswhisper.utils.Secrets.AES_PASS
-import java.lang.Exception
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -37,7 +36,11 @@ class DecryptMessageUseCase @Inject constructor(
 
             val aesKeyFromPassword: SecretKey = AESFromPassword.get(AES_PASS.toCharArray(), salt)
             val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-            cipher.init(Cipher.DECRYPT_MODE, aesKeyFromPassword, GCMParameterSpec(TAG_LENGTH_BIT, iv))
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                aesKeyFromPassword,
+                GCMParameterSpec(TAG_LENGTH_BIT, iv)
+            )
             val plainText = cipher.doFinal(cipherText)
             Message(
                 id = null,

@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,15 +32,16 @@ fun DropdownDevice(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = value, color = MaterialTheme.colors.onSurface)
+                Text(text = value, color = MaterialTheme.colorScheme.onSurface)
                 DropdownMenu(expanded = visibleDropdown, onDismissRequest = { onDismiss() }) {
                     itemList.forEach { item ->
                         DropdownMenuItem(onClick = {
                             onChange(item)
                             onDismiss()
-                        }) {
-                            Text(text = item.name, color = MaterialTheme.colors.onSurface)
-                        }
+                        },
+                            text = {
+                                Text(text = item.name, color = MaterialTheme.colorScheme.onSurface)
+                            })
                     }
                 }
             }

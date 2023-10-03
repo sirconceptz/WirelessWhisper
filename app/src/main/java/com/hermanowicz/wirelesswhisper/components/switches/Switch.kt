@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,13 +46,13 @@ fun SwitchPrimary(
                     style = TextStyle(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (enabled) MaterialTheme.colors.onSurface else Color.Gray
+                        color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray
                     )
                 )
                 Text(
                     text = if (state) stringResource(id = R.string.enabled) else stringResource(id = R.string.disabled),
                     style = TextStyle(fontSize = 14.sp),
-                    color = if (enabled) MaterialTheme.colors.onSurface else Color.Gray
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray
                 )
             }
             Switch(checked = state, onCheckedChange = { onStateChange() }, enabled = enabled)

@@ -15,6 +15,10 @@ class CopyMessageToClipboardUseCase @Inject constructor(
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip: ClipData = ClipData.newPlainText("message", message)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, context.getString(R.string.message_copied_to_clipboard), Toast.LENGTH_LONG).show()
+        Toast.makeText(
+            context,
+            context.getString(R.string.message_copied_to_clipboard),
+            Toast.LENGTH_LONG
+        ).show()
     }
 }

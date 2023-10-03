@@ -36,8 +36,7 @@ class GetAllChatsUseCase @Inject constructor(
                 if (!addressList.contains(address)) {
                     allChats.add(
                         Chat(
-                            deviceName = device!!.name,
-                            macAddress = address,
+                            device = device!!,
                             unreadMessages = if (message.readOut) 0 else 1,
                             deviceConnectionStatus = device!!.connected
                         )
@@ -55,8 +54,7 @@ class GetAllChatsUseCase @Inject constructor(
                 if (!addressList.contains(address) && currentDeviceAddress?.isNotEmpty() == true) {
                     allChats.add(
                         Chat(
-                            deviceName = context.getString(R.string.unnamed),
-                            macAddress = address,
+                            device = Device(macAddress = address, name = context.getString(R.string.unnamed)),
                             unreadMessages = if (message.readOut) 0 else 1,
                             deviceConnectionStatus = false
                         )
@@ -77,7 +75,7 @@ class GetAllChatsUseCase @Inject constructor(
 
     private fun getChatForAddress(address: String, chatList: List<Chat>): Chat? {
         chatList.forEach { chat ->
-            if (chat.macAddress == address) {
+            if (chat.device.macAddress == address) {
                 return chat
             }
         }

@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,44 +39,35 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogNewMessage
-import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
+import com.hermanowicz.wirelesswhisper.components.spacer.SpacerLarge
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
 import com.hermanowicz.wirelesswhisper.data.model.Chat
+import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.navigation.features.allChats.state.AllChatsUiState
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllChatsScreen(
-    onClickSingleChat: (String) -> Unit,
+    onClickSingleChat: (Device?) -> Unit,
     bottomBar: @Composable () -> Unit,
     viewModel: AllChatsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.state.collectAsState()
 
-    if (uiState.showDialogNewMessage) {
-        DialogNewMessage(
-            label = stringResource(id = R.string.new_message),
-            selectedValue = uiState.newMessageDevice?.name ?: "",
-            deviceList = uiState.connectedDevices,
-            dropdownVisible = uiState.showDropdownNewMessage,
-            showDropdown = { viewModel.showNewMessageDropdown(it) },
-            onSelectDevice = { viewModel.onSelectNewMessageDevice(it) },
-            onPositiveRequest = { onClickSingleChat(uiState.newMessageDevice!!.macAddress) },
-            onDismissRequest = { viewModel.showDialogNewMessage(false) }
-        )
-    }
+    Dialogs(uiState, viewModel, onClickSingleChat)
 
     TopBarScaffold(
         topBarText = stringResource(id = R.string.all_chats),
         bottomBar = bottomBar,
         actions = {
-            Text(
-                modifier = Modifier.clickable {
+            Button(
+                onClick = {
                     viewModel.showDialogNewMessage(true)
-                },
-                text = stringResource(id = R.string.new_),
-                color = Color.White
-            )
+                }
+            ) {
+                Text(text = stringResource(id = R.string.new_))
+            }
         }
     ) {
         LazyColumn(
@@ -91,7 +82,7 @@ fun AllChatsScreen(
                 val state = rememberDismissState(
                     confirmValueChange = {
                         if (it == DismissValue.DismissedToStart) {
-                            viewModel.deleteSingleChat(item.macAddress)
+                            viewModel.deleteSingleChat(item.device.macAddress)
                         }
                         true
                     }
@@ -129,11 +120,31 @@ fun AllChatsScreen(
 }
 
 @Composable
+private fun Dialogs(
+    uiState: AllChatsUiState,
+    viewModel: AllChatsViewModel,
+    onClickSingleChat: (Device?) -> Unit
+) {
+    if (uiState.showDialogNewMessage) {
+        DialogNewMessage(
+            label = stringResource(id = R.string.new_message),
+            selectedValue = uiState.newMessageDevice?.name ?: "",
+            deviceList = uiState.connectedDevices,
+            dropdownVisible = uiState.showDropdownNewMessage,
+            showDropdown = { viewModel.showNewMessageDropdown(it) },
+            onSelectDevice = { viewModel.onSelectNewMessageDevice(it) },
+            onPositiveRequest = { onClickSingleChat(uiState.newMessageDevice) },
+            onDismissRequest = { viewModel.showDialogNewMessage(false) }
+        )
+    }
+}
+
+@Composable
 private fun SingleChat(
-    onClickSingleChat: (String) -> Unit,
+    onClickSingleChat: (Device?) -> Unit,
     chat: Chat
 ) {
-    Box(modifier = Modifier.clickable { onClickSingleChat(chat.macAddress) }) {
+    Box(modifier = Modifier.clickable { onClickSingleChat(chat.device) }) {
         CardPrimary {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -141,14 +152,14 @@ private fun SingleChat(
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (chat.unreadMessages == 0) {
-                    Text(text = chat.deviceName, color = Color.White)
+                    Text(text = chat.device.name, color = Color.White)
                     Spacer(modifier = Modifier.weight(1f))
                     ConnectionStatusBox(status = chat.deviceConnectionStatus)
                 } else {
-                    Text(text = chat.deviceName, color = Color.White)
+                    Text(text = chat.device.name, color = Color.White)
                     Spacer(modifier = Modifier.weight(1f))
                     UnreadMessagesBox(chat.unreadMessages.toString())
-                    Spacer(modifier = Modifier.width(LocalSpacing.current.medium))
+                    SpacerLarge()
                     ConnectionStatusBox(status = chat.deviceConnectionStatus)
                 }
             }

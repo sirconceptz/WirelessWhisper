@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,6 +42,43 @@ fun DialogPrimary(
                 verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.small)
             ) {
                 content()
+                ButtonPrimary(
+                    text = onPositiveLabel,
+                    onClick = onPositiveRequest
+                )
+                ButtonPrimary(
+                    text = stringResource(id = R.string.close),
+                    onClick = onDismissRequest
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogPermissions(
+    onPositiveLabel: String,
+    onPositiveRequest: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(LocalSpacing.current.small)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = LocalSpacing.current.medium,
+                        horizontal = LocalSpacing.current.small
+                    ),
+                verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.small)
+            ) {
+                Text(text = stringResource(id = R.string.permission_is_needed_to_perform_the_action))
                 ButtonPrimary(
                     text = onPositiveLabel,
                     onClick = onPositiveRequest

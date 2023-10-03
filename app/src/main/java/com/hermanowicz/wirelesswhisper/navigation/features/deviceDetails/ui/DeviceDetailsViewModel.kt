@@ -4,9 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.domain.DeletePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.state.DeviceDetailsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -16,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DeviceDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase
+    private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
+    private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase,
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -43,15 +46,29 @@ class DeviceDetailsViewModel @Inject constructor(
         }
     }
 
-    fun showDialogPermissionsConnectDevice(bool: Boolean) {
+    fun showDialogPermissionsConnectDevice(show: Boolean) {
         _state.update {
-            it.copy(showDialogPermissionsConnectDevice = bool)
+            it.copy(showDialogPermissionsConnectDevice = show)
         }
     }
 
-    fun showDialogPermissionsDisconnectDevice(bool: Boolean) {
+    fun showDialogPermissionsDisconnectDevice(show: Boolean) {
         _state.update {
-            it.copy(showDialogPermissionsDisconnectDevice = bool)
+            it.copy(showDialogPermissionsDisconnectDevice = show)
+        }
+    }
+
+    fun showDeleteDeviceDialog(show: Boolean) {
+        _state.update {
+            it.copy(showDeleteDeviceDialog = show)
+        }
+    }
+
+    fun deleteDeviceConfirmed() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (state.value.device != null) {
+                deletePairedDeviceUseCase(state.value.device!!.macAddress)
+            }
         }
     }
 }

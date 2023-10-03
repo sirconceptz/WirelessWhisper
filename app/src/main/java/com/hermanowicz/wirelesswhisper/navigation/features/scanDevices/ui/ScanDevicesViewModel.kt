@@ -27,10 +27,11 @@ class ScanDevicesViewModel @Inject constructor(
 
     fun showDialogOnPairDeviceConfirmation(show: Boolean, device: Device? = null) {
         _state.update {
-            if(device != null)
+            if (device != null) {
                 it.copy(showDialogOnPairDeviceConfirmation = show, deviceDuringPairing = device)
-            else
+            } else {
                 it.copy(showDialogOnPairDeviceConfirmation = show)
+            }
         }
     }
 
