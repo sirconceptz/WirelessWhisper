@@ -8,12 +8,14 @@ import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.ui.Devi
 
 @Composable
 fun DeviceDetailsRoute(
-    bottomBar: @Composable () -> Unit
+    bottomBar: @Composable () -> Unit,
+    navBack: () -> Unit
 ) {
     val bluetoothServiceIntent = Intent(LocalContext.current, MyBluetoothService::class.java)
 
     DeviceDetailsScreen(
         bottomBar = bottomBar,
+        navBack = navBack,
         bluetoothService = bluetoothServiceIntent
     )
 }

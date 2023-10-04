@@ -50,7 +50,7 @@ class SingleChatViewModel @Inject constructor(
         }
     }
 
-    private fun updateDeviceForAddress(device: Device) {
+    private fun updateDeviceForAddress(device: Device?) {
         _state.update { it.copy(device = device) }
     }
 
@@ -108,6 +108,6 @@ class SingleChatViewModel @Inject constructor(
     }
 
     fun isDeviceConnected(): Boolean {
-        return state.value.device.connected
+        return state.value.device?.connected ?: false
     }
 }

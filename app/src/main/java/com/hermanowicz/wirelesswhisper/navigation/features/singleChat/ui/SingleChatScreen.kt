@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,16 +56,16 @@ fun SingleChatScreen(
 
     val launcherPermissionsConnectDevice = permissionChecker(
         onGranted = {
-            if(viewModel.isDeviceConnected()) {
+            if (viewModel.isDeviceConnected()) {
                 sendMessage(
                     context,
                     uiState.currentMessage,
                     bluetoothService,
                     clearTextField = { viewModel.clearCurrentMessage() }
                 )
-            }
-            else
+            } else {
                 showErrorDeviceNotConnected(context)
+            }
         },
         showDialogPermissionNeeded = { viewModel.showDialogPermissionsSendMessage(true) }
     )
@@ -79,7 +79,7 @@ fun SingleChatScreen(
         }
     }
 
-    TopBarScaffold(topBarText = uiState.device.name, navigationIcon = {
+    TopBarScaffold(topBarText = uiState.device?.name ?: "", navigationIcon = {
         IconButton(onClick = navigationIconClick) {
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
@@ -92,6 +92,7 @@ fun SingleChatScreen(
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier
+                    .padding(end = LocalSpacing.current.small)
                     .align(Alignment.CenterVertically)
                     .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
             )
@@ -112,7 +113,11 @@ fun SingleChatScreen(
 }
 
 fun showErrorDeviceNotConnected(context: Context) {
-    Toast.makeText(context, context.getString(R.string.error_device_is_not_connected), Toast.LENGTH_LONG).show()
+    Toast.makeText(
+        context,
+        context.getString(R.string.error_device_is_not_connected),
+        Toast.LENGTH_LONG
+    ).show()
 }
 
 @Composable

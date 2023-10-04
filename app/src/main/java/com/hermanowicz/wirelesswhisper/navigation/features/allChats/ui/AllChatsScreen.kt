@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -40,7 +39,7 @@ import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogNewMessage
 import com.hermanowicz.wirelesswhisper.components.spacer.SpacerLarge
-import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
 import com.hermanowicz.wirelesswhisper.data.model.Chat
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.navigation.features.allChats.state.AllChatsUiState
@@ -57,11 +56,12 @@ fun AllChatsScreen(
 
     Dialogs(uiState, viewModel, onClickSingleChat)
 
-    TopBarScaffold(
+    TopBarScaffoldLazyColumn(
         topBarText = stringResource(id = R.string.all_chats),
         bottomBar = bottomBar,
         actions = {
             Button(
+                modifier = Modifier.padding(end = LocalSpacing.current.small),
                 onClick = {
                     viewModel.showDialogNewMessage(true)
                 }
@@ -70,51 +70,45 @@ fun AllChatsScreen(
             }
         }
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(LocalSpacing.current.medium)
-        ) {
-            itemsIndexed(
-                items = uiState.chatList,
-                key = { _: Int, item: Chat -> item.hashCode() }
-            ) { _: Int, item: Chat ->
-                val state = rememberDismissState(
-                    confirmValueChange = {
-                        if (it == DismissValue.DismissedToStart) {
-                            viewModel.deleteSingleChat(item.device.macAddress)
-                        }
-                        true
+        itemsIndexed(
+            items = uiState.chatList,
+            key = { _: Int, item: Chat -> item.hashCode() }
+        ) { _: Int, item: Chat ->
+            val state = rememberDismissState(
+                confirmValueChange = {
+                    if (it == DismissValue.DismissedToStart) {
+                        viewModel.deleteSingleChat(item.device.macAddress)
                     }
-                )
+                    true
+                }
+            )
 
-                SwipeToDismiss(
-                    state = state,
-                    background = {
-                        val color = when (state.dismissDirection) {
-                            DismissDirection.StartToEnd -> Color.Transparent
-                            DismissDirection.EndToStart -> Color.Red
-                            null -> Color.Transparent
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(color)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.align(Alignment.CenterEnd)
-                            )
-                        }
-                    },
-                    dismissContent = {
-                        SingleChat(onClickSingleChat = onClickSingleChat, chat = item)
-                    },
-                    directions = setOf(DismissDirection.EndToStart)
-                )
-            }
+            SwipeToDismiss(
+                state = state,
+                background = {
+                    val color = when (state.dismissDirection) {
+                        DismissDirection.StartToEnd -> Color.Transparent
+                        DismissDirection.EndToStart -> Color.Red
+                        null -> Color.Transparent
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                        )
+                    }
+                },
+                dismissContent = {
+                    SingleChat(onClickSingleChat = onClickSingleChat, chat = item)
+                },
+                directions = setOf(DismissDirection.EndToStart)
+            )
         }
     }
 }

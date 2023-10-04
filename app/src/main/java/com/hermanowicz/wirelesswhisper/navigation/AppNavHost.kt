@@ -1,14 +1,14 @@
 package com.hermanowicz.wirelesswhisper.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.SnackbarDefaults
-import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.SnackbarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,8 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.systemuicontroller.SystemUiController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hermanowicz.wirelesswhisper.navigation.features.allChats.AllChatsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.DeviceDetailsRoute
 import com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.PairedDevicesRoute
@@ -51,7 +49,8 @@ fun AppNavHost() {
             }
             composable(route = "${AppScreens.DeviceDetails.route}/{macAddress}") {
                 DeviceDetailsRoute(
-                    bottomBar = { BottomNav(navController = navController) }
+                    bottomBar = { BottomNav(navController = navController) },
+                    navBack = { navController.popBackStack() }
                 )
             }
             composable(route = AppScreens.ScanDevices.route) {
@@ -62,8 +61,10 @@ fun AppNavHost() {
             composable(route = AppScreens.AllChats.route) {
                 AllChatsRoute(
                     onClickSingleChat = { device ->
-                        if(device != null)
-                            navController.navigate("${AppScreens.SingleChat.route}/${device.macAddress}") },
+                        if (device != null) {
+                            navController.navigate("${AppScreens.SingleChat.route}/${device.macAddress}")
+                        }
+                    },
                     bottomBar = { BottomNav(navController = navController) }
                 )
             }

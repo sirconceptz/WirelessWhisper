@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface DeviceLocalDataSource {
     fun observeAll(): Flow<List<Device>>
-    fun observeByMacAddress(macAddress: String): Flow<Device>
+    fun observeByMacAddress(macAddress: String): Flow<Device?>
     fun checkIsExist(macAddress: String): Boolean
     suspend fun insert(device: Device)
     suspend fun updateConnectionStatus(macAddress: String, connectionStatus: Boolean)

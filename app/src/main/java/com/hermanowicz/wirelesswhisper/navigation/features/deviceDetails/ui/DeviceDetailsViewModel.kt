@@ -19,7 +19,7 @@ import javax.inject.Inject
 class DeviceDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
-    private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase,
+    private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -36,7 +36,7 @@ class DeviceDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun updateDeviceState(device: Device) {
+    private fun updateDeviceState(device: Device?) {
         _state.update { it.copy(device = device) }
     }
 
@@ -64,10 +64,17 @@ class DeviceDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun goToNavBack() {
+        _state.update {
+            it.copy(navBack = true)
+        }
+    }
+
     fun deleteDeviceConfirmed() {
         viewModelScope.launch(Dispatchers.IO) {
             if (state.value.device != null) {
                 deletePairedDeviceUseCase(state.value.device!!.macAddress)
+                goToNavBack()
             }
         }
     }

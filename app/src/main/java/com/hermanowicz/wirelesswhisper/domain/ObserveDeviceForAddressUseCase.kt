@@ -8,8 +8,8 @@ import javax.inject.Inject
 
 class ObserveDeviceForAddressUseCase @Inject constructor(
     private val deviceRepository: DeviceRepository
-) : (String) -> Flow<Device> {
-    override fun invoke(macAddress: String): Flow<Device> {
+) : (String) -> Flow<Device?> {
+    override fun invoke(macAddress: String): Flow<Device?> {
         return deviceRepository.observeByMacAddress(macAddress).distinctUntilChanged()
     }
 }

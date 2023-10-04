@@ -13,7 +13,7 @@ interface DeviceDao {
     fun observeAll(): Flow<List<DeviceEntity>>
 
     @Query("SELECT * FROM device WHERE macAddress = (:macAddress)")
-    fun observeByAddress(macAddress: String): Flow<DeviceEntity>
+    fun observeByAddress(macAddress: String): Flow<DeviceEntity?>
 
     @Query("SELECT EXISTS(SELECT * FROM device WHERE macAddress = :macAddress)")
     fun isExist(macAddress: String): Boolean

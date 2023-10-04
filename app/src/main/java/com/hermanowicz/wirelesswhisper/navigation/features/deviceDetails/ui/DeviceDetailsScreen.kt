@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +27,7 @@ import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
 import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
 import com.hermanowicz.wirelesswhisper.components.spacer.SpacerLarge
-import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.domain.GoToPermissionSettingsUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.state.DeviceDetailsUiState
@@ -39,6 +38,7 @@ import com.hermanowicz.wirelesswhisper.utils.Permissions
 fun DeviceDetailsScreen(
     bottomBar: @Composable () -> Unit,
     bluetoothService: Intent,
+    navBack: () -> Unit,
     viewModel: DeviceDetailsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -61,27 +61,27 @@ fun DeviceDetailsScreen(
         }
     }
 
+    LaunchedEffect(key1 = uiState.navBack) {
+        if (uiState.navBack) {
+            navBack()
+        }
+    }
+
     Dialogs(uiState, viewModel)
 
-    TopBarScaffold(
+    TopBarScaffoldLazyColumn(
         topBarText = stringResource(id = R.string.device_details),
         bottomBar = bottomBar
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(LocalSpacing.current.medium)
-        ) {
-            item {
-                DeviceDetailsCard(uiState)
-            }
-            item {
-                Buttons(
-                    launcherPermissionsConnectDevice,
-                    launcherPermissionsDisconnectDevice,
-                    viewModel
-                )
-            }
+        item {
+            DeviceDetailsCard(uiState)
+        }
+        item {
+            Buttons(
+                launcherPermissionsConnectDevice,
+                launcherPermissionsDisconnectDevice,
+                viewModel
+            )
         }
     }
 }
@@ -122,7 +122,7 @@ private fun Dialogs(
             },
             onDismissRequest = { viewModel.showDeleteDeviceDialog(false) }
         ) {
-            Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
+            Text(text = stringResource(id = R.string.are_you_sure_you_want_to_delete_this_device))
         }
     }
 }

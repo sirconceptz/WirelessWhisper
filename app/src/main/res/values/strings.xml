@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Wireless Whisper</string>
     <string name="device_details">Device details</string>
-    <string name="paired_devices">Paired devices</string>
+    <string name="paired_devices">Devices</string>
     <string name="scan_devices">Scan devices</string>
     <string name="settings">Settings</string>
     <string name="name">Name</string>
@@ -10,7 +10,7 @@
     <string name="main_screen">Home</string>
     <string name="all_chats">All chats</string>
     <string name="single_chat">Single chat</string>
-    <string name="pair_new_device">Pair new device</string>
+    <string name="pair_new_device">New device</string>
     <string name="close">Close</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>

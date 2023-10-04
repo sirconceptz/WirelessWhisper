@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +26,7 @@ fun DropdownDevice(
 ) {
     Column(modifier = Modifier.clickable { onClick() }) {
         Column(
-            modifier = Modifier.padding(LocalSpacing.current.medium)
+            modifier = Modifier.padding(LocalSpacing.current.small)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -35,13 +35,15 @@ fun DropdownDevice(
                 Text(text = value, color = MaterialTheme.colorScheme.onSurface)
                 DropdownMenu(expanded = visibleDropdown, onDismissRequest = { onDismiss() }) {
                     itemList.forEach { item ->
-                        DropdownMenuItem(onClick = {
-                            onChange(item)
-                            onDismiss()
-                        },
+                        DropdownMenuItem(
+                            onClick = {
+                                onChange(item)
+                                onDismiss()
+                            },
                             text = {
                                 Text(text = item.name, color = MaterialTheme.colorScheme.onSurface)
-                            })
+                            }
+                        )
                     }
                 }
             }

@@ -40,7 +40,6 @@ import com.hermanowicz.wirelesswhisper.utils.Secrets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -140,24 +139,26 @@ class MyBluetoothService : Service() {
                     scope.launch {
                         val device =
                             observeDeviceAddressUseCase(mmSocket.remoteDevice.address).first()
-                        val encryptedMessage = EncryptedMessage(
-                            message = text,
-                            timestamp = System.currentTimeMillis(),
-                            iv = device.encryptionKey,
-                            senderAddress = device.macAddress
-                        )
-                        val decryptedMessage: Message? = decryptMessageUseCase(encryptedMessage)
-                        if (decryptedMessage != null) {
-                            saveMessageLocallyUseCase(decryptedMessage)
-                        } else {
-                            val message = Message(
-                                id = null,
+                        if (device != null) {
+                            val encryptedMessage = EncryptedMessage(
+                                message = text,
                                 timestamp = System.currentTimeMillis(),
-                                senderAddress = device.macAddress,
-                                error = true
+                                iv = device.encryptionKey,
+                                senderAddress = device.macAddress
                             )
-                            saveMessageLocallyUseCase(message)
-                            exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
+                            val decryptedMessage: Message? = decryptMessageUseCase(encryptedMessage)
+                            if (decryptedMessage != null) {
+                                saveMessageLocallyUseCase(decryptedMessage)
+                            } else {
+                                val message = Message(
+                                    id = null,
+                                    timestamp = System.currentTimeMillis(),
+                                    senderAddress = device.macAddress,
+                                    error = true
+                                )
+                                saveMessageLocallyUseCase(message)
+                                exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
+                            }
                         }
                     }
                 }
@@ -176,32 +177,34 @@ class MyBluetoothService : Service() {
                 timestamp = System.currentTimeMillis(),
                 senderAddress = getDeviceAddressUseCase() ?: ""
             )
-            val encryptionKey = device.await().encryptionKey
-            if (encryptionKey.isNotEmpty()) {
-                val encryptedMessage =
-                    encryptMessageUseCase(decryptedMessage, encryptionKey)
-                try {
-                    sendToDevice(
-                        encryptedMessage.message.toByteArray(),
-                        address = device.await().macAddress
-                    )
-                    scope.launch {
-                        val message = Message(
-                            id = null,
-                            senderAddress = getDeviceAddressUseCase() ?: "",
-                            receiverAddress = mmSocket.remoteDevice.address,
-                            timestamp = System.currentTimeMillis(),
-                            readOut = true,
-                            received = false,
-                            message = decryptedMessage.message
+            if (device.await() != null) {
+                val encryptionKey = device.await()!!.encryptionKey
+                if (encryptionKey.isNotEmpty()) {
+                    val encryptedMessage =
+                        encryptMessageUseCase(decryptedMessage, encryptionKey)
+                    try {
+                        sendToDevice(
+                            encryptedMessage.message.toByteArray(),
+                            address = device.await()!!.macAddress
                         )
-                        saveMessageLocallyUseCase(message)
+                        scope.launch {
+                            val message = Message(
+                                id = null,
+                                senderAddress = getDeviceAddressUseCase() ?: "",
+                                receiverAddress = mmSocket.remoteDevice.address,
+                                timestamp = System.currentTimeMillis(),
+                                readOut = true,
+                                received = false,
+                                message = decryptedMessage.message
+                            )
+                            saveMessageLocallyUseCase(message)
+                        }
+                    } catch (e: IOException) {
+                        updateDeviceConnectionStatusUseCase(device.await()!!.macAddress, false)
                     }
-                } catch (e: IOException) {
-                    updateDeviceConnectionStatusUseCase(device.await().macAddress, false)
+                } else {
+                    exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
                 }
-            } else {
-                exchangeNewEncryptionKey(mmSocket.remoteDevice.address)
             }
         }
 
@@ -328,9 +331,9 @@ class MyBluetoothService : Service() {
                 Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
         ) {
             Device(
                 macAddress = socket.remoteDevice.address,
@@ -465,7 +468,7 @@ class MyBluetoothService : Service() {
         val address = connectedThread?.isConnected()
         if (address != null) {
             scope.launch {
-                updateDeviceConnectionStatusUseCase(address, false)
+                updateDeviceConnectionStatusUseCase(address, true)
             }
         }
     }
@@ -496,8 +499,9 @@ class MyBluetoothService : Service() {
                 Timber.e(e)
             }
         }
-        if (address != null)
+        if (address != null) {
             setDeviceConnectionStatus(address, false)
+        }
     }
 
     private fun setDeviceConnectionStatus(address: String, status: Boolean) {

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface DeviceRepository {
     fun observeAll(): Flow<List<Device>>
-    fun observeByMacAddress(macAddress: String): Flow<Device>
+    fun observeByMacAddress(macAddress: String): Flow<Device?>
     fun checkIsExist(macAddress: String): Boolean
     suspend fun insert(device: Device)
     suspend fun updateName(macAddress: String, newName: String)

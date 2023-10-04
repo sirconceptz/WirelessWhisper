@@ -6,10 +6,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +29,7 @@ import com.hermanowicz.wirelesswhisper.components.dialog.DialogPermissions
 import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
 import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
-import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
 import com.hermanowicz.wirelesswhisper.domain.GoToPermissionSettingsUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.state.ScanDevicesState
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
@@ -47,16 +45,22 @@ fun ScanDevicesScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
 
-    val launcherPermissionsScanDevices = permissionChecker(onGranted = { viewModel.scanDevices() },
-        showDialogPermissionNeeded = { viewModel.showDialogPermissionsScanDevices(true) })
+    val launcherPermissionsScanDevices = permissionChecker(
+        onGranted = { viewModel.scanDevices() },
+        showDialogPermissionNeeded = { viewModel.showDialogPermissionsScanDevices(true) }
+    )
 
     val launcherPermissionsOnDiscoverableMode =
-        permissionChecker(onGranted = { viewModel.turnOnDiscoverable(true) },
-            showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnDiscoverable(true) })
+        permissionChecker(
+            onGranted = { viewModel.turnOnDiscoverable(true) },
+            showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnDiscoverable(true) }
+        )
 
     val launcherPermissionsOnPair =
-        permissionChecker(onGranted = { connectDevice(bluetoothService, state, context) },
-            showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnPair(true) })
+        permissionChecker(
+            onGranted = { connectDevice(bluetoothService, state, context) },
+            showDialogPermissionNeeded = { viewModel.showDialogPermissionsOnPair(true) }
+        )
 
     LaunchedEffect(key1 = state.goToPermissionSettings) {
         if (state.goToPermissionSettings) {
@@ -86,48 +90,47 @@ fun ScanDevicesScreen(
 
     Dialogs(state, viewModel, launcherPermissionsOnPair)
 
-    TopBarScaffold(
-        topBarText = stringResource(id = R.string.scan_devices), actions = {
-            Button(onClick = { launcherPermissionsScanDevices.launch(Permissions.btPermissions) }) {
+    TopBarScaffoldLazyColumn(
+        topBarText = stringResource(id = R.string.scan_devices),
+        actions = {
+            Button(
+                modifier = Modifier.padding(end = LocalSpacing.current.small),
+                onClick = { launcherPermissionsScanDevices.launch(Permissions.btPermissions) }
+            ) {
                 Text(
                     text = stringResource(id = R.string.scan)
                 )
             }
-        }, bottomBar = bottomBar
+        },
+        bottomBar = bottomBar
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(LocalSpacing.current.medium)
-        ) {
-            if (state.foundDevices.isEmpty()) {
-                item {
+        if (state.foundDevices.isEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.no_found_devices),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        state.foundDevices.forEach { device ->
+            item {
+                CardPrimary {
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(id = R.string.no_found_devices),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.onClickFoundDevice(device) },
+                        text = device.name,
+                        color = Color.White,
                         textAlign = TextAlign.Center
                     )
                 }
             }
-            state.foundDevices.forEach { device ->
-                item {
-                    CardPrimary {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.onClickFoundDevice(device) },
-                            text = device.name,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-            item {
-                DividerCardInside()
-                ButtonPrimary(text = stringResource(id = R.string.turn_on_discoverable)) {
-                    launcherPermissionsOnDiscoverableMode.launch(Permissions.btPermissions)
-                }
+        }
+        item {
+            DividerCardInside()
+            ButtonPrimary(text = stringResource(id = R.string.turn_on_discoverable)) {
+                launcherPermissionsOnDiscoverableMode.launch(Permissions.btPermissions)
             }
         }
     }
@@ -144,49 +147,60 @@ private fun Dialogs(
     launcherPermissionsOnPair: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
 ) {
     if (state.showDialogPermissionsScanDevices) {
-        DialogPermissions(onPositiveLabel = stringResource(id = android.R.string.ok),
+        DialogPermissions(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
                 viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsScanDevices(false)
             },
-            onDismissRequest = { viewModel.showDialogPermissionsScanDevices(false) })
+            onDismissRequest = { viewModel.showDialogPermissionsScanDevices(false) }
+        )
     }
 
     if (state.showDialogPermissionsOnDiscoverable) {
-        DialogPermissions(onPositiveLabel = stringResource(id = android.R.string.ok),
+        DialogPermissions(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
                 viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsOnDiscoverable(false)
             },
-            onDismissRequest = { viewModel.showDialogPermissionsOnDiscoverable(false) })
+            onDismissRequest = { viewModel.showDialogPermissionsOnDiscoverable(false) }
+        )
     }
 
     if (state.showDialogPermissionsOnPair) {
-        DialogPermissions(onPositiveLabel = stringResource(id = android.R.string.ok),
+        DialogPermissions(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
                 viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsOnPair(false)
             },
-            onDismissRequest = { viewModel.showDialogPermissionsOnPair(false) })
+            onDismissRequest = { viewModel.showDialogPermissionsOnPair(false) }
+        )
     }
 
     if (state.showDialogOnPairDeviceConfirmation) {
-        DialogPrimary(onPositiveLabel = stringResource(id = android.R.string.ok),
+        DialogPrimary(
+            onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
                 launcherPermissionsOnPair.launch(Permissions.btPermissions)
                 viewModel.showDialogOnPairDeviceConfirmation(false)
             },
-            onDismissRequest = { viewModel.showDialogOnPairDeviceConfirmation(false) }) {
+            onDismissRequest = { viewModel.showDialogOnPairDeviceConfirmation(false) }
+        ) {
             Text(text = stringResource(id = R.string.do_you_want_to_pair_this_device))
         }
     }
 }
 
 private fun connectDevice(
-    bluetoothService: Intent, state: ScanDevicesState, context: Context
+    bluetoothService: Intent,
+    state: ScanDevicesState,
+    context: Context
 ) {
     bluetoothService.putExtra(
-        MyBluetoothService.ACTION_CONNECT, state.deviceDuringPairing!!.macAddress
+        MyBluetoothService.ACTION_CONNECT,
+        state.deviceDuringPairing!!.macAddress
     )
     bluetoothService.action = MyBluetoothService.ACTION_CONNECT
     context.startForegroundService(bluetoothService)

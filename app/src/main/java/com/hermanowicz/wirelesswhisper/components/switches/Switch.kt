@@ -33,7 +33,7 @@ fun SwitchPrimary(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(LocalSpacing.current.small))
-            .padding(LocalSpacing.current.medium),
+            .padding(LocalSpacing.current.small),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(

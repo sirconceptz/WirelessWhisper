@@ -16,8 +16,8 @@ class DeviceLocalDataSourceImpl @Inject constructor(
         return dao.observeAll().map { devices -> devices.map { it.toDomainModel() } }
     }
 
-    override fun observeByMacAddress(macAddress: String): Flow<Device> {
-        return dao.observeByAddress(macAddress).map { it.toDomainModel() }
+    override fun observeByMacAddress(macAddress: String): Flow<Device?> {
+        return dao.observeByAddress(macAddress).map { it?.toDomainModel() }
     }
 
     override fun checkIsExist(macAddress: String): Boolean {

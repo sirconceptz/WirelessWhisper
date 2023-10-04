@@ -15,7 +15,7 @@ class DeviceRepositoryImpl @Inject constructor(
         return localDataSource.observeAll()
     }
 
-    override fun observeByMacAddress(macAddress: String): Flow<Device> {
+    override fun observeByMacAddress(macAddress: String): Flow<Device?> {
         return localDataSource.observeByMacAddress(macAddress)
     }
 

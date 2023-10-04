@@ -3,14 +3,10 @@ package com.hermanowicz.wirelesswhisper.navigation.features.settings.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,8 +18,8 @@ import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.lifecycle.OnLifecycleEvent
 import com.hermanowicz.wirelesswhisper.components.switches.SwitchPrimary
 import com.hermanowicz.wirelesswhisper.components.text.TextLabel
-import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
-import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
+import com.hermanowicz.wirelesswhisper.navigation.features.settings.state.AppSettingsState
 
 @Composable
 fun SettingsScreen(
@@ -59,31 +55,33 @@ fun SettingsScreen(
         }
     }
 
-    TopBarScaffold(
+    TopBarScaffoldLazyColumn(
         topBarText = stringResource(id = R.string.settings),
         bottomBar = bottomBar
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(LocalSpacing.current.medium)
-        ) {
-            item {
-                TextLabel(text = stringResource(id = R.string.main_settings))
-                CardWhiteBgWithBorder {
-                    SwitchPrimary(
-                        label = stringResource(id = R.string.bluetooth),
-                        state = uiState.bluetoothEnabled,
-                        onStateChange = { viewModel.openDeviceSettings(true) }
-                    )
-                    DividerCardInside()
-                    SwitchPrimary(
-                        label = stringResource(id = R.string.notifications),
-                        state = uiState.notificationsEnabled,
-                        onStateChange = { viewModel.openDeviceSettings(true) }
-                    )
-                }
-            }
+        item {
+            TextLabel(text = stringResource(id = R.string.main_settings))
+            SettingsCard(uiState, viewModel)
         }
+    }
+}
+
+@Composable
+private fun SettingsCard(
+    uiState: AppSettingsState,
+    viewModel: SettingsViewModel
+) {
+    CardWhiteBgWithBorder {
+        SwitchPrimary(
+            label = stringResource(id = R.string.bluetooth),
+            state = uiState.bluetoothEnabled,
+            onStateChange = { viewModel.openDeviceSettings(true) }
+        )
+        DividerCardInside()
+        SwitchPrimary(
+            label = stringResource(id = R.string.notifications),
+            state = uiState.notificationsEnabled,
+            onStateChange = { viewModel.openDeviceSettings(true) }
+        )
     }
 }

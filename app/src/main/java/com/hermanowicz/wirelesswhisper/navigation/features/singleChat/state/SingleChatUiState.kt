@@ -5,7 +5,7 @@ import com.hermanowicz.wirelesswhisper.data.model.Message
 
 data class SingleChatUiState(
     var messageList: List<Message> = emptyList(),
-    var device: Device = Device(),
+    var device: Device? = null,
     var currentMessage: String = "",
     var deleteMode: Boolean = false,
     var goToPermissionSettings: Boolean = false,

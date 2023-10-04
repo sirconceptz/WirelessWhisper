@@ -36,7 +36,7 @@ fun DialogPrimary(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        vertical = LocalSpacing.current.medium,
+                        vertical = LocalSpacing.current.small,
                         horizontal = LocalSpacing.current.small
                     ),
                 verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.small)
@@ -73,7 +73,7 @@ fun DialogPermissions(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        vertical = LocalSpacing.current.medium,
+                        vertical = LocalSpacing.current.small,
                         horizontal = LocalSpacing.current.small
                     ),
                 verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.small)
@@ -115,7 +115,7 @@ fun DialogNewMessage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        vertical = LocalSpacing.current.medium,
+                        vertical = LocalSpacing.current.small,
                         horizontal = LocalSpacing.current.small
                     ),
                 verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.small)

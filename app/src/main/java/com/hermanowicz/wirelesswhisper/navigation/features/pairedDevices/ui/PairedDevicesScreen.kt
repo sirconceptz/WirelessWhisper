@@ -1,10 +1,8 @@
 package com.hermanowicz.wirelesswhisper.navigation.features.pairedDevices.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hermanowicz.wirelesswhisper.R
 import com.hermanowicz.wirelesswhisper.components.card.CardPrimary
-import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffold
+import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
 import com.hermanowicz.wirelesswhisper.ui.theme.LocalSpacing
 
 @Composable
@@ -30,38 +28,33 @@ fun PairedDevicesScreen(
 ) {
     val uiState by viewModel.state.collectAsState()
 
-    TopBarScaffold(
+    TopBarScaffoldLazyColumn(
         topBarText = stringResource(id = R.string.paired_devices),
         actions = {
             Button(
+                modifier = Modifier.padding(end = LocalSpacing.current.small),
                 onClick = {
                     navigateToToScanDevices()
-                })
-            {
+                }
+            ) {
                 Text(text = stringResource(id = R.string.pair_new_device))
             }
         },
         bottomBar = bottomBar
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(LocalSpacing.current.medium)
-        ) {
-            item {
-                uiState.deviceList.forEach { device ->
-                    CardPrimary {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onClickPairedDevice(device.macAddress) },
-                            text = device.name,
-                            style = TextStyle.Default.copy(
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
+        item {
+            uiState.deviceList.forEach { device ->
+                CardPrimary {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onClickPairedDevice(device.macAddress) },
+                        text = device.name,
+                        style = TextStyle.Default.copy(
+                            color = Color.White,
+                            textAlign = TextAlign.Center
                         )
-                    }
+                    )
                 }
             }
         }
