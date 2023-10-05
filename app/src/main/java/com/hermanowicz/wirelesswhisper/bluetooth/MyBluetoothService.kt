@@ -478,8 +478,9 @@ class MyBluetoothService : Service() {
     }
 
     private fun initService() {
-        if(serviceNotActive)
+        if (serviceNotActive) {
             startForeground()
+        }
         startServer()
         serviceNotActive = false
     }

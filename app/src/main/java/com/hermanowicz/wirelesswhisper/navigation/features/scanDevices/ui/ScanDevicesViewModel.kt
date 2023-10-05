@@ -39,18 +39,22 @@ class ScanDevicesViewModel @Inject constructor(
         showDialogOnPairDeviceConfirmation(show = true, device = device)
     }
 
+    fun onStartScanning() {
+        getDeviceListFromHashMapUseCase.clearFoundDevices()
+    }
+
     fun setFoundDevice(foundDevice: BluetoothDevice) {
         getDeviceListFromHashMapUseCase.addDevice(foundDevice)
         val devices = getDeviceListFromHashMapUseCase()
         if (devices != state.value.foundDevices) {
-            _state.update {
-                it.copy(foundDevices = devices)
-            }
+            updateDevicesState(devices)
         }
     }
 
-    fun onStartScanning() {
-        getDeviceListFromHashMapUseCase.clearFoundDevices()
+    private fun updateDevicesState(devices: List<Device>) {
+        _state.update {
+            it.copy(foundDevices = devices)
+        }
     }
 
     fun turnOnDiscoverable(bool: Boolean) {

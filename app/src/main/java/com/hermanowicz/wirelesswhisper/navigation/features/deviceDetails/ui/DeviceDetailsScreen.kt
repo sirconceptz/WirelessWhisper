@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import com.hermanowicz.wirelesswhisper.components.dialog.DialogPrimary
 import com.hermanowicz.wirelesswhisper.components.divider.DividerCardInside
 import com.hermanowicz.wirelesswhisper.components.permissions.permissionChecker
 import com.hermanowicz.wirelesswhisper.components.spacer.SpacerLarge
+import com.hermanowicz.wirelesswhisper.components.textfield.TextFieldAndLabel
 import com.hermanowicz.wirelesswhisper.components.topBarScoffold.TopBarScaffoldLazyColumn
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.domain.GoToPermissionSettingsUseCase
@@ -74,7 +76,11 @@ fun DeviceDetailsScreen(
         bottomBar = bottomBar
     ) {
         item {
-            DeviceDetailsCard(uiState)
+            DeviceDetailsCard(
+                uiState = uiState,
+                onChangeDeviceName = { viewModel.onChangeDeviceName(it) },
+                onConfirmChangeName = { viewModel.onConfirmChangeDeviceName() }
+            )
         }
         item {
             Buttons(
@@ -128,19 +134,26 @@ private fun Dialogs(
 }
 
 @Composable
-private fun DeviceDetailsCard(uiState: DeviceDetailsUiState) {
+private fun DeviceDetailsCard(
+    uiState: DeviceDetailsUiState,
+    onChangeDeviceName: (String) -> Unit,
+    onConfirmChangeName: () -> Unit
+) {
     CardPrimary {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = stringResource(id = R.string.name),
-                color = Color.White
-            )
-            Text(
-                text = uiState.device?.name ?: "",
-                color = Color.White
+            TextFieldAndLabel(
+                labelText = stringResource(id = R.string.name),
+                placeholder = stringResource(id = R.string.name),
+                textfieldText = uiState.deviceName,
+                textEvent = onChangeDeviceName,
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onConfirmChangeName()
+                    }
+                )
             )
         }
         DividerCardInside(

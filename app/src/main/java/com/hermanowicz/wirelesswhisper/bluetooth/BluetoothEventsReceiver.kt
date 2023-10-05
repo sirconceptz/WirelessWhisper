@@ -33,21 +33,24 @@ class BluetoothEventsReceiver : BroadcastReceiver() {
     private fun startServer(context: Context) {
         Timber.d("Bluetooth: Turned on - start server")
         BluetoothAction.goToAction(
-            context, MyBluetoothService.ACTION_START
+            context,
+            MyBluetoothService.ACTION_START
         )
     }
 
     private fun stopServer(context: Context) {
         Timber.d("Bluetooth: Turned off - stop server")
         BluetoothAction.goToAction(
-            context, MyBluetoothService.ACTION_STOP
+            context,
+            MyBluetoothService.ACTION_STOP
         )
     }
 
     private fun updateDevicesConnectionStatus(context: Context) {
         Timber.d("Bluetooth: Device disconnected - ACL DISCONNECTED")
         BluetoothAction.goToAction(
-            context, MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS
+            context,
+            MyBluetoothService.ACTION_UPDATE_DEVICE_CONNECTION_STATUS
         )
     }
 }

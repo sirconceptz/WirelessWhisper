@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.domain.DeletePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
+import com.hermanowicz.wirelesswhisper.domain.UpdateDeviceNameUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.deviceDetails.state.DeviceDetailsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class DeviceDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
-    private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase
+    private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase,
+    private val updateDeviceNameUseCase: UpdateDeviceNameUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -37,7 +39,11 @@ class DeviceDetailsViewModel @Inject constructor(
     }
 
     private fun updateDeviceState(device: Device?) {
-        _state.update { it.copy(device = device) }
+        _state.update { it.copy(device = device, deviceName = device?.name ?: "") }
+    }
+
+    fun onChangeDeviceName(deviceName: String) {
+        _state.update { it.copy(deviceName = deviceName) }
     }
 
     fun onGoToPermissionSettings(bool: Boolean) {
@@ -75,6 +81,14 @@ class DeviceDetailsViewModel @Inject constructor(
             if (state.value.device != null) {
                 deletePairedDeviceUseCase(state.value.device!!.macAddress)
                 goToNavBack()
+            }
+        }
+    }
+
+    fun onConfirmChangeDeviceName() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (state.value.device != null) {
+                updateDeviceNameUseCase(state.value.device!!.macAddress, state.value.deviceName)
             }
         }
     }

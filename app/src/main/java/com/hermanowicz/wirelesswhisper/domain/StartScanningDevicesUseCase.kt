@@ -16,9 +16,6 @@ class StartScanningDevicesUseCase @Inject constructor(
             context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val btAdapter = bluetoothManager.adapter
         try {
-            if (btAdapter.isDiscovering) {
-                btAdapter.cancelDiscovery()
-            }
             btAdapter.startDiscovery()
         } catch (e: SecurityException) {
             Timber.e(e.message)

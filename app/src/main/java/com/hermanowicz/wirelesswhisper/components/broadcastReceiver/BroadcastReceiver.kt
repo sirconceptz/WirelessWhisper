@@ -1,9 +1,11 @@
 package com.hermanowicz.wirelesswhisper.components.broadcastReceiver
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -14,6 +16,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import timber.log.Timber
 
+@SuppressLint("UnspecifiedRegisterReceiverFlag")
 @Composable
 fun SystemBroadcastReceiver(
     intentFilter: IntentFilter,
@@ -30,7 +33,11 @@ fun SystemBroadcastReceiver(
             }
         }
 
-        context.registerReceiver(broadcast, intentFilter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(broadcast, intentFilter, RECEIVER_NOT_EXPORTED)
+        } else {
+            context.registerReceiver(broadcast, intentFilter)
+        }
 
         onDispose {
             context.unregisterReceiver(broadcast)
@@ -60,7 +67,8 @@ fun ScanDevicesBroadcastReceiver(
                     val device: BluetoothDevice? =
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             intent.getParcelableExtra(
-                                BluetoothDevice.EXTRA_DEVICE
+                                BluetoothDevice.EXTRA_DEVICE,
+                                BluetoothDevice::class.java
                             )
                         } else {
                             intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
