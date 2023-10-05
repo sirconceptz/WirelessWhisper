@@ -27,6 +27,10 @@ class MainActivity : ComponentActivity() {
             applicationContext,
             MyBluetoothService.ACTION_DISCONNECT_ALL_DEVICES
         )
+        BluetoothAction.goToAction(
+            applicationContext,
+            MyBluetoothService.ACTION_STOP
+        )
         super.onDestroy()
     }
 }

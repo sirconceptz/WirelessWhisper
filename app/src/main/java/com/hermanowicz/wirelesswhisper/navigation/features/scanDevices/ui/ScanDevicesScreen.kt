@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -84,6 +85,7 @@ fun ScanDevicesScreen(
                 context.startActivity(intent)
             } catch (e: SecurityException) {
                 Timber.e(context.getString(R.string.error_bluetooth_is_not_active))
+                Toast.makeText(context, context.getString(R.string.error_bluetooth_is_not_active), Toast.LENGTH_LONG).show()
             }
         }
     }

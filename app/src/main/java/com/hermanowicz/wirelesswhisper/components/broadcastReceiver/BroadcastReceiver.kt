@@ -60,8 +60,7 @@ fun ScanDevicesBroadcastReceiver(
                     val device: BluetoothDevice? =
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             intent.getParcelableExtra(
-                                BluetoothDevice.EXTRA_DEVICE,
-                                BluetoothDevice::class.java
+                                BluetoothDevice.EXTRA_DEVICE
                             )
                         } else {
                             intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)

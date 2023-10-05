@@ -52,7 +52,7 @@ import java.io.OutputStream
 import java.util.UUID
 import javax.inject.Inject
 
-private const val TAG = "MY_BLUETOOTH_MANAGER"
+private const val TAG = "APP_BLUETOOTH_SERVICE"
 
 const val MESSAGE_READ: Int = 0
 
@@ -99,6 +99,7 @@ class MyBluetoothService : Service() {
     lateinit var generateEncryptionKeyUseCase: GenerateEncryptionKeyUseCase
 
     private val scope by lazy { CoroutineScope(Dispatchers.IO) }
+    private var serviceNotActive = true
 
     inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
 
@@ -224,7 +225,7 @@ class MyBluetoothService : Service() {
                 }
             } catch (e: IOException) {
                 Timber.e(TAG, context.getString(R.string.error_error_occured_when_sending_data), e)
-                updateDeviceConnectionStatusUseCase(address, false)
+                setDeviceConnectionStatus(address, false)
                 // Send a failure message back to the activity.
                 showToast(
                     context.getString(R.string.error_couldnt_send_data_to_the_other_device)
@@ -297,6 +298,7 @@ class MyBluetoothService : Service() {
                 try {
                     socket.connect()
                 } catch (e: SecurityException) {
+                    showToast(context.getString(R.string.error_bluetooth_is_not_active))
                     Timber.e(e.message)
                     return
                 } catch (e: Exception) {
@@ -345,6 +347,7 @@ class MyBluetoothService : Service() {
         }
         if (device != null) {
             saveDeviceIfNotSaved(device = device, checkKey = checkKey)
+            setDeviceConnectionStatus(device.macAddress, true)
             Timber.d(context.getString(R.string.connected_to) + " " + device.name)
             showToast(context.getString(R.string.connected_to) + " " + device.name)
         } else {
@@ -369,6 +372,7 @@ class MyBluetoothService : Service() {
             try {
                 bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(Secrets.APP_NAME, uuid)
             } catch (e: SecurityException) {
+                showToast(context.getString(R.string.error_bluetooth_is_not_active))
                 null
             }
         }
@@ -451,7 +455,7 @@ class MyBluetoothService : Service() {
                 ACTION_APP_INVISIBLE -> appVisibilityStatus = false
             }
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     private fun disconnectAllDevices() {
@@ -468,14 +472,16 @@ class MyBluetoothService : Service() {
         val address = connectedThread?.isConnected()
         if (address != null) {
             scope.launch {
-                updateDeviceConnectionStatusUseCase(address, true)
+                updateDeviceConnectionStatusUseCase(address, false)
             }
         }
     }
 
     private fun initService() {
-        startForeground()
+        if(serviceNotActive)
+            startForeground()
         startServer()
+        serviceNotActive = false
     }
 
     private fun startServer() {
@@ -539,8 +545,6 @@ class MyBluetoothService : Service() {
                     if (!validKey && checkKey) {
                         exchangeNewEncryptionKey(device.macAddress)
                     }
-                } else {
-                    setDeviceConnectionStatus(device.macAddress, true)
                 }
             }
         }
@@ -571,9 +575,9 @@ class MyBluetoothService : Service() {
     }
 
     override fun onDestroy() {
-        scope.cancel()
-        stopForeground(STOP_FOREGROUND_DETACH)
-        stopSelf()
         super.onDestroy()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        scope.cancel()
+        stopSelf()
     }
 }
