@@ -36,7 +36,7 @@
     <string name="error_couldnt_send_data_to_the_other_device">Problem z wysłaniem wiadomości</string>
     <string name="received_message_is_encrypted_impossible_to_read">Otrzymana wiadomość jest zaszyfrowana nieznanym kluczem. Poproś nadawcę o wysłanie wiadomości ponownie.</string>
     <string name="message_copied_to_clipboard">Wiadomość skopiowana do schowka</string>
-    <string name="permission_is_needed_to_perform_the_action">Pozwolenia są potrzebne do wykonania zadania.</string>
+    <string name="permission_is_needed_to_perform_the_action">Do wykonania zadania potrzebne są pozwolenia. Lokalizacja urządzenia jest wykorzystywana wyłącznie przez Bluetooth do komunikacji między urządzeniami lub wyszukiwania urządzeń i nie jest przekazywana ani przechowywana nigdzie indziej.</string>
     <string name="connection_with_device_is_impossible">Połączenie z urządzeniem jest aktualnie niemożliwe</string>
     <string name="delete_device">Usuń urządzenie</string>
 </resources>
