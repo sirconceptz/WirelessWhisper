@@ -3,6 +3,7 @@ package com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.ui
 import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.ViewModel
 import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.domain.CheckIsBluetoothPermissionGrantedUseCase
 import com.hermanowicz.wirelesswhisper.domain.GetDeviceListFromHashMapUseCase
 import com.hermanowicz.wirelesswhisper.domain.StartScanningDevicesUseCase
 import com.hermanowicz.wirelesswhisper.navigation.features.scanDevices.state.ScanDevicesState
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ScanDevicesViewModel @Inject constructor(
     private val startScanningDevicesUseCase: StartScanningDevicesUseCase,
-    private val getDeviceListFromHashMapUseCase: GetDeviceListFromHashMapUseCase
+    private val getDeviceListFromHashMapUseCase: GetDeviceListFromHashMapUseCase,
+    private val checkIsBluetoothPermissionGrantedUseCase: CheckIsBluetoothPermissionGrantedUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(ScanDevicesState())
     val state: StateFlow<ScanDevicesState> = _state.asStateFlow()
@@ -85,5 +87,9 @@ class ScanDevicesViewModel @Inject constructor(
         _state.update {
             it.copy(showDialogPermissionsOnPair = bool)
         }
+    }
+
+    fun isNeededPermissionsGranted() : Boolean {
+        return checkIsBluetoothPermissionGrantedUseCase()
     }
 }

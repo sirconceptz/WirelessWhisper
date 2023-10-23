@@ -3,6 +3,7 @@ package com.hermanowicz.wirelesswhisper.navigation.features.singleChat.ui
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,23 +55,14 @@ fun SingleChatScreen(
     val context = LocalContext.current
     val uiState by viewModel.state.collectAsState()
 
-    val launcherPermissionsConnectDevice = permissionChecker(
+    val launcherPermissionsSendMessage = permissionChecker(
         onGranted = {
-            if (viewModel.isDeviceConnected()) {
-                sendMessage(
-                    context,
-                    uiState.currentMessage,
-                    bluetoothService,
-                    clearTextField = { viewModel.clearCurrentMessage() }
-                )
-            } else {
-                showErrorDeviceNotConnected(context)
-            }
+            sendMessageIfConnected(viewModel, context, uiState, bluetoothService)
         },
-        showDialogPermissionNeeded = { viewModel.showDialogPermissionsSendMessage(true) }
+        showDialogPermissionNeeded = { viewModel.onGoToPermissionSettings(true) }
     )
 
-    Dialogs(uiState, viewModel)
+    Dialogs(uiState, viewModel, launcherPermissionsSendMessage)
 
     LaunchedEffect(key1 = uiState.goToPermissionSettings) {
         if (uiState.goToPermissionSettings) {
@@ -87,20 +79,25 @@ fun SingleChatScreen(
             )
         }
     }, actions = {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier
-                    .padding(end = LocalSpacing.current.small)
-                    .align(Alignment.CenterVertically)
-                    .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
-            )
-        }) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier
+                .padding(end = LocalSpacing.current.small)
+                .align(Alignment.CenterVertically)
+                .clickable { viewModel.onClickEditMode(!uiState.deleteMode) }
+        )
+    }) {
         ChatView(
             messageList = uiState.messageList,
             currentMessage = uiState.currentMessage,
-            checkPermissions = { launcherPermissionsConnectDevice.launch(Permissions.btPermissions) },
+            checkPermissions = {
+                if (viewModel.isNeededPermissionsGranted())
+                    sendMessageIfConnected(viewModel, context, uiState, bluetoothService)
+                else
+                    viewModel.showDialogPermissionsSendMessage(true)
+            },
             onCurrentMessageChange = {
                 viewModel.onCurrentMessageChange(it)
             },
@@ -109,6 +106,24 @@ fun SingleChatScreen(
             onClickDelete = { viewModel.deleteSingleMessage(it.id!!) },
             onCopyMessageToClipboard = { viewModel.copyMessageToClipboard(it) }
         )
+    }
+}
+
+private fun sendMessageIfConnected(
+    viewModel: SingleChatViewModel,
+    context: Context,
+    uiState: SingleChatUiState,
+    bluetoothService: Intent
+) {
+    if (viewModel.isDeviceConnected()) {
+        sendMessage(
+            context,
+            uiState.currentMessage,
+            bluetoothService,
+            clearTextField = { viewModel.clearCurrentMessage() }
+        )
+    } else {
+        showErrorDeviceNotConnected(context)
     }
 }
 
@@ -123,14 +138,15 @@ fun showErrorDeviceNotConnected(context: Context) {
 @Composable
 private fun Dialogs(
     uiState: SingleChatUiState,
-    viewModel: SingleChatViewModel
+    viewModel: SingleChatViewModel,
+    launcherPermissionsSendMessage: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
 ) {
     if (uiState.showDialogPermissionsSendMessage) {
         DialogPermissions(
             onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
-                viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsSendMessage(false)
+                launcherPermissionsSendMessage.launch(Permissions.btPermissions)
             },
             onDismissRequest = { viewModel.showDialogPermissionsSendMessage(false) }
         )

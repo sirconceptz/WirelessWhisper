@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
+import com.hermanowicz.wirelesswhisper.domain.CheckIsBluetoothPermissionGrantedUseCase
 import com.hermanowicz.wirelesswhisper.domain.DeletePairedDeviceUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
 import com.hermanowicz.wirelesswhisper.domain.UpdateDeviceNameUseCase
@@ -21,7 +22,8 @@ class DeviceDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
     private val deletePairedDeviceUseCase: DeletePairedDeviceUseCase,
-    private val updateDeviceNameUseCase: UpdateDeviceNameUseCase
+    private val updateDeviceNameUseCase: UpdateDeviceNameUseCase,
+    private val checkIsBluetoothPermissionGrantedUseCase: CheckIsBluetoothPermissionGrantedUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -91,5 +93,9 @@ class DeviceDetailsViewModel @Inject constructor(
                 updateDeviceNameUseCase(state.value.device!!.macAddress, state.value.deviceName)
             }
         }
+    }
+
+    fun isNeededPermissionsGranted() : Boolean {
+        return checkIsBluetoothPermissionGrantedUseCase()
     }
 }

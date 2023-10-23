@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermanowicz.wirelesswhisper.data.model.Device
 import com.hermanowicz.wirelesswhisper.data.model.Message
+import com.hermanowicz.wirelesswhisper.domain.CheckIsBluetoothPermissionGrantedUseCase
 import com.hermanowicz.wirelesswhisper.domain.CopyMessageToClipboardUseCase
 import com.hermanowicz.wirelesswhisper.domain.DeleteMessageLocallyUseCase
 import com.hermanowicz.wirelesswhisper.domain.ObserveDeviceForAddressUseCase
@@ -27,7 +28,8 @@ class SingleChatViewModel @Inject constructor(
     private val observeDeviceForAddressUseCase: ObserveDeviceForAddressUseCase,
     private val updateMessageReadOutStatusUseCase: UpdateMessageReadOutStatusUseCase,
     private val deleteMessageLocallyUseCase: DeleteMessageLocallyUseCase,
-    private val copyMessageToClipboardUseCase: CopyMessageToClipboardUseCase
+    private val copyMessageToClipboardUseCase: CopyMessageToClipboardUseCase,
+    private val checkIsBluetoothPermissionGrantedUseCase: CheckIsBluetoothPermissionGrantedUseCase
 ) : ViewModel() {
     val macAddress: String = savedStateHandle["macAddress"] ?: ""
 
@@ -109,5 +111,9 @@ class SingleChatViewModel @Inject constructor(
 
     fun isDeviceConnected(): Boolean {
         return state.value.device?.connected ?: false
+    }
+
+    fun isNeededPermissionsGranted() : Boolean {
+        return checkIsBluetoothPermissionGrantedUseCase()
     }
 }

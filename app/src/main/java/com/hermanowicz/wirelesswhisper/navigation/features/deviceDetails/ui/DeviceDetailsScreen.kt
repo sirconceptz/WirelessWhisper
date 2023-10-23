@@ -69,7 +69,12 @@ fun DeviceDetailsScreen(
         }
     }
 
-    Dialogs(uiState, viewModel)
+    Dialogs(
+        uiState,
+        viewModel,
+        launcherPermissionsConnectDevice,
+        launcherPermissionsDisconnectDevice
+    )
 
     TopBarScaffoldLazyColumn(
         topBarText = stringResource(id = R.string.device_details),
@@ -84,9 +89,9 @@ fun DeviceDetailsScreen(
         }
         item {
             Buttons(
-                launcherPermissionsConnectDevice,
-                launcherPermissionsDisconnectDevice,
-                viewModel
+                viewModel,
+                context,
+                bluetoothService
             )
         }
     }
@@ -95,14 +100,16 @@ fun DeviceDetailsScreen(
 @Composable
 private fun Dialogs(
     uiState: DeviceDetailsUiState,
-    viewModel: DeviceDetailsViewModel
+    viewModel: DeviceDetailsViewModel,
+    launcherPermissionsConnectDevice: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
+    launcherPermissionsDisconnectDevice: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
 ) {
     if (uiState.showDialogPermissionsConnectDevice) {
         DialogPermissions(
             onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
-                viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsConnectDevice(false)
+                launcherPermissionsConnectDevice.launch(Permissions.btPermissions)
             },
             onDismissRequest = { viewModel.showDialogPermissionsConnectDevice(false) }
         )
@@ -112,8 +119,8 @@ private fun Dialogs(
         DialogPermissions(
             onPositiveLabel = stringResource(id = android.R.string.ok),
             onPositiveRequest = {
-                viewModel.onGoToPermissionSettings(true)
                 viewModel.showDialogPermissionsDisconnectDevice(false)
+                launcherPermissionsDisconnectDevice.launch(Permissions.btPermissions)
             },
             onDismissRequest = { viewModel.showDialogPermissionsDisconnectDevice(false) }
         )
@@ -178,10 +185,12 @@ private fun DeviceDetailsCard(
 
 @Composable
 private fun Buttons(
-    launcherPermissionsConnectDevice: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
-    launcherPermissionsDisconnectDevice: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
-    viewModel: DeviceDetailsViewModel
+    viewModel: DeviceDetailsViewModel,
+    context: Context,
+    bluetoothService: Intent
 ) {
+    val uiState by viewModel.state.collectAsState()
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -191,14 +200,20 @@ private fun Buttons(
                 modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.connect)
             ) {
-                launcherPermissionsConnectDevice.launch(Permissions.btPermissions)
+                if (viewModel.isNeededPermissionsGranted())
+                    connectDevice(uiState.device, bluetoothService, context)
+                else
+                    viewModel.showDialogPermissionsConnectDevice(true)
             }
             SpacerLarge()
             ButtonPrimary(
                 modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.disconnect)
             ) {
-                launcherPermissionsDisconnectDevice.launch(Permissions.btPermissions)
+                if (viewModel.isNeededPermissionsGranted())
+                    disconnectDevice(uiState.device, bluetoothService, context)
+                else
+                    viewModel.showDialogPermissionsDisconnectDevice(true)
             }
         }
         ButtonPrimary(
