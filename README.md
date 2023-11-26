@@ -4,7 +4,7 @@ The application is a messenger for the Android platform that uses Bluetooth for 
 
 ## Installation
 
-The application is not available in Google Play store yet.
+The application is available in Google Play store [here](https://play.google.com/store/apps/details?id=com.hermanowicz.wirelesswhisper).
 
 ## Platforms
 
